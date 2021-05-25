@@ -9,7 +9,7 @@ In this readme, I'll be covering Python and will add support for nodeJs later.
 
 1. Setup a virtual environment
 
-```bash
+```sh
 mkdir lambda 
 cd lambda
 python3 -m venv venv
@@ -29,7 +29,7 @@ pip install flatten_json
 
 3. While still in the virtual environment, save a list of its dependencies to a `requirements.txt` file:
 
-```
+```sh
 pip freeze > requirements.txt
 ```
 
@@ -37,7 +37,7 @@ pip freeze > requirements.txt
 ![lambda_layer_dir_structure](/images/lambda_layer_dir_structure.png)
 
 5. From the project root, run the following command to build your dependencies in a container similar to the Lambda execution environment Amazon provides (courtesy of [lambci](https://hub.docker.com/u/lambci)):
-```
+```sh
 docker run --rm \
 --volume=$(pwd):/lambda-build \
 -w=/lambda-build \
