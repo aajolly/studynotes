@@ -9,7 +9,7 @@ In this readme, I'll be covering Python and will add support for nodeJs later.
 
 1. Setup a virtual environment
 
-```
+```bash
 mkdir lambda 
 cd lambda
 python3 -m venv venv
@@ -20,7 +20,7 @@ More on [venv](https://docs.python.org/3/library/venv.html)
 
 2. Install the libraries you need. For this example, I need `requests`, `pandas` and `flatten_json`.
 
-```
+```python
 pip install requests
 pip install pandas
 pip install pyarrow
