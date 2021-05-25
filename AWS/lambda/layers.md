@@ -52,6 +52,7 @@ pip install -r requirements.txt --target python
 `pip install -r requirements.txt --target python`: Installs the project dependencies as normal, from the requirements.txt file to the python folder (more on that [here](https://pip.pypa.io/en/stable/reference/pip_install/#cmdoption-t))
 
 6. You should see some output from pip. This is running in the Docker container. If successful, you should have dependencies installed to the python folder you created earlier! Mine looks like this:
+
 ![lambda_layers_dir_structure_after_docker_run](/images/lambda_layers_dir_structure_after_docker_run.png)
 
 7. At this point, zip python folder: `zip -r pylayer python/`. This will create a pylayer.zip file in your project's root directory.
