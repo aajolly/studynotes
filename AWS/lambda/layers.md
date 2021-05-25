@@ -34,7 +34,7 @@ pip freeze > requirements.txt
 ```
 
 4. Create a python folder. This will house all the libraries to go in our layer. At this point, your folder structure should be:
-Image
+![lambda_layer_dir_structure](/images/lambda_layer_dir_structure.png)
 
 5. From the project root, run the following command to build your dependencies in a container similar to the Lambda execution environment Amazon provides (courtesy of [lambci](https://hub.docker.com/u/lambci)):
 ```
@@ -52,9 +52,9 @@ pip install -r requirements.txt --target python
 `pip install -r requirements.txt --target python`: Installs the project dependencies as normal, from the requirements.txt file to the python folder (more on that [here](https://pip.pypa.io/en/stable/reference/pip_install/#cmdoption-t))
 
 6. You should see some output from pip. This is running in the Docker container. If successful, you should have dependencies installed to the python folder you created earlier! Mine looks like this:
-Image
+![lambda_layers_dir_structure_after_docker_run](/images/lambda_layers_dir_structure_after_docker_run.png)
 
 7. At this point, zip python folder: `zip -r pylayer python/`. This will create a pylayer.zip file in your project's root directory.
 8. Next, upload the .zip file to Lambda (if <50MB, you can upload directly to Lambda or else you'll have to upload to S3 and reference it while creating lambda layer)
 9. Go AWS Lambda Console and click on Layers in the left pane. I already have a layer and I'm adding a new version to it, I upload the file to S3 already
-Image
+![lambda_layers_create_layer_console](/images/lambda_layers_create_layer_console.png)
