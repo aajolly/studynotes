@@ -1,0 +1,151 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Stack Set for Creating EC2 Instances - Linux & Windows
+
+Parameters:
+  ParentVPCStack:
+    Description: 'Stack name of parent VPC stack'
+    Type: String
+    Default: StackSet-vpc-438aab72-83e0-4d97-8efd-2d47bb0a7c39
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues: [t2.nano, t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge,
+      t3.nano, t3.micro, t3.small, t3.medium, t3.large, t3.xlarge, t3.2xlarge,
+      m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge,
+      m5.large, m5.xlarge, m5.2xlarge, m5.4xlarge,
+      c5.large, c5.xlarge, c5.2xlarge, c5.4xlarge, c5.9xlarge,
+      r5.large, r5.xlarge, r5.2xlarge, r5.4xlarge
+      ]
+    ConstraintDescription: must be a valid EC2 instance type.
+  RemoteAccessLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    Default: 0.0.0.0/0
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  LatestLinuxAmiId:
+    Type:  'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  LatestWindowsAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base'
+  
+Resources: 
+  LinuxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: !Ref 'RemoteAccessLocation'
+      VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
+  WindowsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable RDP access via port 3389
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 3389
+        ToPort: 3389
+        CidrIp: !Ref 'RemoteAccessLocation'
+      VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
+  EC2IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'EC2IAMRole-${AWS::AccountId}'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub 'EC2InstanceProfile-${AWS::AccountId}'
+      Path: /
+      Roles:
+        - !Ref EC2IAMRole
+  EC2LinuxLatestAMI:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestLinuxAmiId
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      InstanceType: !Ref InstanceType
+      Monitoring: false
+      SubnetId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-SubnetBPublic'}
+      SecurityGroupIds:
+        - !Ref LinuxSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub 'EC2Linux1-${AWS::AccountId}'
+  EC2WindowsLatestAMI:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestWindowsAmiId
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      InstanceType: !Ref InstanceType
+      Monitoring: false
+      SubnetId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-SubnetCPublic'}
+      SecurityGroupIds:
+        - !Ref WindowsSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub 'EC2Windows1-${AWS::AccountId}'
+  EC2LinuxGoldenAMI:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0b28dfc7adc325ef4
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      Monitoring: false
+      SubnetId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-SubnetAPublic'}
+      SecurityGroupIds:
+        - !Ref LinuxSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub 'EC2Linux1-${AWS::AccountId}'
+  EC2WindowsGoldenAMI:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0613a489ef66dc885
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      InstanceType: !Ref InstanceType
+      Monitoring: false
+      SubnetId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-SubnetBPublic'}
+      SecurityGroupIds:
+        - !Ref WindowsSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub 'EC2Windows1-${AWS::AccountId}'
+  EC2InstanceProfileParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: secops/ec2/instanceprofile
+      Type: String
+      Value: !Ref EC2InstanceProfile
+      Tier: Standard
+      Description: SSM Parameter for EC2 Instance Profile
+      Tags:
+        Department: Security-Operations
+        Name: EC2InstanceProfile
+Outputs:
+  EC2LinuxLatestAMI:
+    Value: !Ref EC2LinuxLatestAMI
+  EC2LinuxGoldenAMI:
+    Value: !Ref EC2LinuxGoldenAMI
+  EC2WindowsLatestAMI:
+    Value: !Ref EC2WindowsLatestAMI
+  EC2WindowsGoldenAMI:
+    Value: !Ref EC2WindowsGoldenAMI
