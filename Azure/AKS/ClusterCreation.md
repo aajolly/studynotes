@@ -40,7 +40,6 @@ az acr build `
 ```
 
 7. Register the following resource provider if not already registered
-```
 Microsoft.OperationsManagement
 ```
 Register-AzResourceProvider -ProviderNamespace Microsoft.OperationsManagement
