@@ -67,7 +67,10 @@ az aks create `
 
 10. Create a deployment using the container image uploaded to ACR previously, followed by exposing the service using a load balancer
 ```s
-kubectl create deployment nodeapp --image=aajollyacr02022023.azurecr.io/demo/nyancat:v1 --replicas=1 --port=80
+kubectl create deployment nodeapp `
+ --image=aajollyacr02022023.azurecr.io/demo/nyancat:v1 `
+ --replicas=1 `
+ --port=80
 ```
 ```yaml
 apiVersion: v1
