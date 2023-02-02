@@ -69,7 +69,7 @@ az aks create `
 ```
 kubectl create deployment nodeapp --image=aajollyacr02022023.azurecr.io/demo/nyancat:v1 --replicas=1 --port=80
 ```
-```
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
