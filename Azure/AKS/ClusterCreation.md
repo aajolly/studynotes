@@ -46,7 +46,7 @@ Microsoft.OperationsManagement
 Register-AzResourceProvider -ProviderNamespace Microsoft.OperationsManagement
 ```
 
-8. Create AKS Cluster
+8. Create AKS Cluster. If the network plugin is not specified, the default is Kubenet
 ```bash
 az aks create `
  --resource-group aajolly-aks-rg `
@@ -54,9 +54,45 @@ az aks create `
  --node-count 1 `
  --enable-addons monitoring `
  --generate-ssh-keys `
- --service-principal "<appID of Service Principal created in step2" `
- --client-secret "<password of Service Principal created in step3"
+ --service-principal "<appID of Service Principal created in step2>" `
+ --client-secret "<password of Service Principal created in step3>"
  ```
+
+ Below are some commands that can be used for creating an AKS cluster with more details
+ 
+ ```
+ az network vnet create `
+ --name aajolly-aks-vnet `
+ --resource-group aajolly-aks-azcni-rg `
+ --address-prefixes 10.0.0.0/23 100.64.0.0/16
+ ```
+ ```
+ az network vnet subnet create `    
+ --name aajolly-aks-subnet1 `
+ --resource-group aajolly-aks-azcni-rg ` 
+ --vnet-name aajolly-aks-vnet `
+ --address-prefixes 100.64.0.0/20
+ ```
+ ```
+ az aks create `
+ --resource-group aajolly-aks-rg2 `
+ --name kubenetCluster `
+ --node-count 3 `
+ --network-plugin kubenet `
+ --service-cidr 172.0.0.0/16 `
+ --dns-service-ip 172.0.0.10 `
+ --pod-cidr 100.64.0.0/20 `
+ --docker-bridge-address 172.99.0.1/16 `
+ --vnet-subnet-id <subnetID for a subnet> `
+ --service-principal "<appID of Service Principal created in step2>" `
+ --client-secret "<password of Service Principal created in step3>"
+ ```
+
+ **Note:** Please note that `service-cidr`, `docker-bridge-address` could be any CIDR blocks. The `dns-service-ip` needs to be from the `services-cidr` block though, hence I've selected 172.0.0.10. 
+ The `vnet-subnet-id` is the subnetID from which the nodes are assigned IPs. The `pod-cidr` block needs to be big enough as every node will be assigned a /24 from this block.
+
+ **Note:** With kubenet, only the nodes receive an IP address in the virtual network subnet. Pods can't communicate directly with each other. Instead, User Defined Routing (UDR) and IP forwarding is used for connectivity between pods across nodes. By default, UDRs and IP forwarding configuration is created and maintained by the AKS service, but you have the option to bring your own route table for custom route management.
+ Azure supports a maximum of 400 routes in a UDR, so you can't have an AKS cluster larger than 400 nodes. AKS Virtual Nodes and Azure Network Policies aren't supported with kubenet. You can use Calico Network Policies, as they are supported with kubenet.
 
  9. Configure the CLI to access AKS cluster
  ```bash
