@@ -60,20 +60,20 @@ az aks create `
 
  Below are some commands that can be used for creating an AKS cluster with more details
  
- ```
+ ```bash
  az network vnet create `
  --name aajolly-aks-vnet `
  --resource-group aajolly-aks-azcni-rg `
  --address-prefixes 10.0.0.0/23 100.64.0.0/16
  ```
- ```
+ ```bash
  az network vnet subnet create `    
  --name aajolly-aks-subnet1 `
  --resource-group aajolly-aks-azcni-rg ` 
  --vnet-name aajolly-aks-vnet `
  --address-prefixes 100.64.0.0/20
  ```
- ```
+ ```bash
  az aks create `
  --resource-group aajolly-aks-rg2 `
  --name kubenetCluster `
@@ -102,7 +102,7 @@ az aks create `
 ```
 
 10. Create a deployment using the container image uploaded to ACR previously, followed by exposing the service using a load balancer
-```s
+```bash
 kubectl create deployment nodeapp `
  --image=aajollyacr02022023.azurecr.io/demo/nyancat:v1 `
  --replicas=1 `
