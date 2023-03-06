@@ -28,7 +28,7 @@ As you plan your identity strategy, consider the following characteristics that 
 ## Azure AD Editions
 
 | Feature | Free | Microsoft 365 Apps | Premium P1 | Premium P2 |
-| ----------- | ----------- | ----------- | ----------- | ----------- |
+| ----------- | :-----------: | :-----------: | :-----------: | :-----------: |
 | Directory Objects | 500K | Unlimited | Unlimited | Unlimited |
 | Single Sign-on | Unlimited | Unlimited | Unlimited | Unlimited |
 | Core Identity and Access Management | X | X | X | X |
