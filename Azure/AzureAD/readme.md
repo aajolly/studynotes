@@ -71,7 +71,7 @@ Review the following ways you can use management groups in Azure Policy to manag
 
 - **Consider cost reporting.** Use management groups to do cost reporting by department or for specific business scenarios. You can use management groups to report on budget details across subscriptions.
 
-[Management Group Hierarchy](/images/azure/management_group.png)
+![Management Group Hierarchy](/images/azure/management_group.png)
 
 ### Azure Policy
 Azure Policy is a service in Azure that enables you to create, assign, and manage policies to control or audit your resources. These policies enforce different rules over your resource configurations so the configurations stay compliant with corporate standards. You apply the policies to your resources by using management groups.
