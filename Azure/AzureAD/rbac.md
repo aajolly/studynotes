@@ -20,8 +20,6 @@ The following table shows how the Actions or NotActions permissions are used in 
 | Role name | Description | Actions permissions | NotActions permissions |
 | :-------: | :-------: | :-------: | :-------: |
 | Owner | Allow all actions | * | n/a |
-| Contributor | Allow all actions, except write or delete role assignment | * | - `Microsoft.Authorization/*/Delete`
-- `Microsoft.Authorization/*/Write`
-- `Microsoft.Authorization/elevateAccess/Action` | 
+| Contributor | Allow all actions, except write or delete role assignment | * | - `Microsoft.Authorization/*/Delete` - `Microsoft.Authorization/*/Write` - `Microsoft.Authorization/elevateAccess/Action` | 
 | Reader | Allow all read actions | /*/read | n/a |
 
