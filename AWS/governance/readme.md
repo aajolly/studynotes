@@ -182,4 +182,26 @@ Here are some important features from a governance perspective
 #### Summary
 ![summary_services](/images/governance/summary_aws_services.png)
 
+## Case Study
+An enterprise wants to migrate to the cloud.
 
+### Challenges
+1. **Move to the cloud fast**: They wanted to lift and rearchitect their infrastructure to take advantage of the cloud. But this required moving hundreds of teams and products from an on-premises infrastructure to the cloud—and as fast as possible.
+2. **Increase application performance**: They wanted to automate and scale as much as possible along the way. They needed to do this while increasing application performance, reliability, and availability.
+
+### Customer journey overview
+To meet those objectives, they knew they had to automate everything, and they embarked on a journey to figure out how to automate. This included setting up a landing zone, creating an AWS Service Catalog portfolio, and creating a user portal for a single place to go for onboarding.
+![customer_journey](/images/governance/customer_journey.png)
+
+1. Setup a landing zone
+Define a catalog of all needed AWS services, tailor a product around it, and then add it to an onboarding portfolio. However, a single portfolio didn’t fit everyone. So, create a model called Architecture Driven Landing Zones. Every team that onboards to the cloud goes through a review process. Then they’re grouped into one of four specific architecture portfolios: containers, serverless, monitoring and logging, or big data. Now teams can focus on the products they need and find them faster. They’re also taking advantage of the cost governance aspect of the Service Catalog. They implemented cost governance with Guardrails so teams don’t have to worry about deploying unapproved resources. For instance, restrictions can prevent deployment of certain Amazon EC2 instance types, such as GPU.
+![landing_zone](/images/governance/setup_lz.png)
+
+2. Create an AWS Service Catalog portfolio.
+![create_sc_portfoliio](/images/governance/create_service_catalog_portfolio.png)
+
+3. Use AWS CloudFormation stacks.
+![cfn_stacks](/images/governance/cfn_stacks.png)
+
+4. Customize with AWS Systems Manager.
+![ssm](/images/governance/ssm.png)
