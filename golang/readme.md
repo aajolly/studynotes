@@ -108,3 +108,74 @@
 - Structs are value types
 - No inheritance, but can use composition via embedding
 - Tags can be added to struct fields to describe field
+
+## Control Flow
+### If Statements
+- Initializer
+- Comparison operators
+- Logical operators
+- Short circuiting
+- If -else statements
+- if -else if statements
+- Equality and floats
+
+### Switch Statements
+- Switching on tags
+- Cases with multiple tests
+- Initializers
+- Switches with no tag
+- Fallthrough
+- Type switches
+- Breaking out early
+
+### Looping
+- Simple loops
+  - for initializer; test; incrementer {}
+  - for test {}
+  - for {}
+- exiting early
+  - break
+  - continue
+  - labels
+- looping over collections
+  - arrays, slices, maps, strings, channels
+  - for k, v := range collection {}
+    - for _, v := range collection {} // values only, key or index for arrays/slices is discarded
+    - for k := range collection {} // keys only, values are discarded
+
+### Defer
+- Used to delay execution of a statement until function exits
+- Useful to group "open" and "close" functions together
+  - Be careful in loops
+- Run in LIFO (last-in, first-out) order
+- Arguments evaluated at time defer is executed, not at time of called function execution
+
+### Panic
+- Occur when program cannot continue at all
+  - Don't use when file can't be opened, unless it is critical
+  - Use for unrecoverable events - cannot obtain TCP port for web server
+- Function will stop executing
+  - Deferred functions will still work
+- If nothing handles panic, program will exit
+
+### Recover
+- Used to recover from panics
+- Only useful in deferred functions
+- Current function will not attempt to continue, but higher functions in call stack will
+
+## Pointers
+### Creating Pointers
+- Pointer types use an * as a prefix to type pointed to
+  - *int - a pointer to an integer
+- Use the addressof operator (&) to get address of variable
+
+### Dereferencing pointers
+- Dereference a pointer by preceding with an *
+- Complex types (e.g. structs) are automatically dereferenced
+
+Create pointers to objects
+- Can use the addressof operator (&) if value type already exists
+  - ms := myStruct{foo: 42}
+  - p := &ms
+- Use the `new` keyword
+  - Can't initialize fields at the same time
