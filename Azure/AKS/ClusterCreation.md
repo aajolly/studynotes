@@ -111,12 +111,12 @@ az aks create \
   --service-cidr 172.0.0.0/16 \
   --dns-service-ip 172.0.0.10 \
   --docker-bridge-address 172.99.0.1/16 \
-  --service-principal "<appID of Service Principal created in step2>" \
-  --client-secret "<password of Service Principal created in step3>" \
+  --service-principal "< appID of Service Principal created in step2 >" \
+  --client-secret "< password of Service Principal created in step3 >" \
   --generate-ssh-keys \
   --enable-addons monitoring \
-  --vnet-subnet-id "/subscriptions/8160335e-abb9-4638-aae0-74d5ffe0aeb8/resourceGroups/aajolly-aks1-rg/providers/Microsoft.Network/virtualNetworks/aajolly-aks1-vnet/subnets/aajolly-aks1-node-subnet" \
-  --pod-subnet-id "/subscriptions/8160335e-abb9-4638-aae0-74d5ffe0aeb8/resourceGroups/aajolly-aks1-rg/providers/Microsoft.Network/virtualNetworks/aajolly-aks1-vnet/subnets/aajolly-aks1-pod-subnet"
+  --vnet-subnet-id "< Host-Subnet-ID >" \
+  --pod-subnet-id "< Pod-Subnet-ID >"
 ```
 
  **Note:** Please note that `service-cidr`, `docker-bridge-address` could be any CIDR blocks. The `dns-service-ip` needs to be from the `services-cidr` block though, hence I've selected 172.0.0.10. 
