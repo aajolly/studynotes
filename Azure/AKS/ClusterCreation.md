@@ -21,9 +21,9 @@ az acr create --resource-group aajolly-aks-rg --name aajollyacr02022023 --sku Ba
 4. Assign an role (least priviledge principal) to the service principal we created in earlier
 ```bash
 az role assignment create \
---assignee <appID of Service Principal created in Step2> \
---role acrpull \ --> To pull images from ACR
---scope <ACR ID created in Step3>
+  --assignee <appID of Service Principal created in Step2> \
+  --role acrpull \ --> To pull images from ACR
+  --scope <ACR ID created in Step3>
 ```
 
 5. I use a demo container app for testing, clone the repo
@@ -35,9 +35,9 @@ cd nyan-cat
 6. Use ACR tasks to build & push the container image to ACR without installing docker
 ```bash
 az acr build \
- --image demo/nyancat:v1 \
- --registry aajollyacr02022023 \
- --file Dockerfile .
+  --image demo/nyancat:v1 \
+  --registry aajollyacr02022023 \
+  --file Dockerfile .
 ```
 
 7. Register the following resource provider if not already registered
@@ -49,74 +49,74 @@ Register-AzResourceProvider -ProviderNamespace Microsoft.OperationsManagement
 8. Create AKS Cluster. If the network plugin is not specified, the default is Kubenet
 ```bash
 az aks create \
---resource-group aajolly-aks-rg \
---name aajollyAKSCluster \
---node-count 1 \
---enable-addons monitoring \
---generate-ssh-keys \
---service-principal "<appID of Service Principal created in step2>" \
---client-secret "<password of Service Principal created in step3>"
+  --resource-group aajolly-aks-rg \
+  --name aajollyAKSCluster \
+  --node-count 1 \
+  --enable-addons monitoring \
+  --generate-ssh-keys \
+  --service-principal "<appID of Service Principal created in step2>" \
+  --client-secret "<password of Service Principal created in step3>"
  ```
 
  What if you want to dictate the VNET structure in which AKS should be deployed. Below are some commands that can be used for creating an AKS cluster with more details
  **Create VNET**
  ```bash
- az network vnet create \
- --name aajolly-aks-vnet \
- -g aajolly-aks-rg \
- --address-prefixes 10.0.0.0/23 100.64.0.0/16
+az network vnet create \
+  --name aajolly-aks-vnet \
+  -g aajolly-aks-rg \
+  --address-prefixes 10.0.0.0/23 100.64.0.0/16
  ```
 **Create Route Table**
 ```bash
 az network route-table create \
---name aks-private-rt \
--g aajolly-aks-rg
+  --name aks-private-rt \
+  -g aajolly-aks-rg
 ```
 **Create Subnet for Nodes**
 ```bash
 az network vnet subnet create \
---name aajolly-aks-node-subnet \
--g aajolly-aks-rg \
---vnet-name aajolly-aks-vnet \
---address-prefixes 10.2.0.0/25
+  --name aajolly-aks-node-subnet \
+  -g aajolly-aks-rg \
+  --vnet-name aajolly-aks-vnet \
+  --address-prefixes 10.2.0.0/25
 ```
 
 **Create Route**
 ```bash
 az network route-table route create \
---name aks-private-route \
--g aajolly-aks-rg \
---route-table-name aks-private-rt \
---address-prefix 0.0.0.0/0 \
---next-hop-type None
+  --name aks-private-route \
+  -g aajolly-aks-rg \
+  --route-table-name aks-private-rt \
+  --address-prefix 0.0.0.0/0 \
+  --next-hop-type None
 ```
 
 **Create Subnet for Pods**
 ```bash
 az network vnet subnet create \
---name aajolly-aks-pod-subnet \
--g aajolly-aks-rg \
---vnet-name aajolly-aks-vnet \
---address-prefixes 100.64.0.0/20 \
---route-table aks-private-rt
+  --name aajolly-aks-pod-subnet \
+  -g aajolly-aks-rg \
+  --vnet-name aajolly-aks-vnet \
+  --address-prefixes 100.64.0.0/20 \
+  --route-table aks-private-rt
 ```
 
 **Create AKS Cluster**
 ```bash
 az aks create \
--g aajolly-aks`-rg \
---name aks1 \
---node-count 2 \
---network-plugin azure \
---service-cidr 172.0.0.0/16 \
---dns-service-ip 172.0.0.10 \
---docker-bridge-address 172.99.0.1/16 \
---service-principal "<appID of Service Principal created in step2>" \
---client-secret "<password of Service Principal created in step3>" \
---generate-ssh-keys \
---enable-addons monitoring \
---vnet-subnet-id "/subscriptions/8160335e-abb9-4638-aae0-74d5ffe0aeb8/resourceGroups/aajolly-aks1-rg/providers/Microsoft.Network/virtualNetworks/aajolly-aks1-vnet/subnets/aajolly-aks1-node-subnet" \
---pod-subnet-id "/subscriptions/8160335e-abb9-4638-aae0-74d5ffe0aeb8/resourceGroups/aajolly-aks1-rg/providers/Microsoft.Network/virtualNetworks/aajolly-aks1-vnet/subnets/aajolly-aks1-pod-subnet"
+  -g aajolly-aks \
+  --name aks1 \
+  --node-count 2 \
+  --network-plugin azure \
+  --service-cidr 172.0.0.0/16 \
+  --dns-service-ip 172.0.0.10 \
+  --docker-bridge-address 172.99.0.1/16 \
+  --service-principal "<appID of Service Principal created in step2>" \
+  --client-secret "<password of Service Principal created in step3>" \
+  --generate-ssh-keys \
+  --enable-addons monitoring \
+  --vnet-subnet-id "/subscriptions/8160335e-abb9-4638-aae0-74d5ffe0aeb8/resourceGroups/aajolly-aks1-rg/providers/Microsoft.Network/virtualNetworks/aajolly-aks1-vnet/subnets/aajolly-aks1-node-subnet" \
+  --pod-subnet-id "/subscriptions/8160335e-abb9-4638-aae0-74d5ffe0aeb8/resourceGroups/aajolly-aks1-rg/providers/Microsoft.Network/virtualNetworks/aajolly-aks1-vnet/subnets/aajolly-aks1-pod-subnet"
 ```
 
  **Note:** Please note that `service-cidr`, `docker-bridge-address` could be any CIDR blocks. The `dns-service-ip` needs to be from the `services-cidr` block though, hence I've selected 172.0.0.10. 
