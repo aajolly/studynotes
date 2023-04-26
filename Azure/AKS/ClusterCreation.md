@@ -58,35 +58,56 @@ az aks create `
  --client-secret "<password of Service Principal created in step3>"
  ```
 
- Below are some commands that can be used for creating an AKS cluster with more details
- 
+ What if you want to dictate the VNET structure in which AKS should be deployed. Below are some commands that can be used for creating an AKS cluster with more details
+ **Create VNET**
  ```bash
  az network vnet create `
  --name aajolly-aks-vnet `
- --resource-group aajolly-aks-azcni-rg `
+ -g aajolly-aks-rg `
  --address-prefixes 10.0.0.0/23 100.64.0.0/16
  ```
- ```bash
- az network vnet subnet create `    
- --name aajolly-aks-subnet1 `
- --resource-group aajolly-aks-azcni-rg ` 
- --vnet-name aajolly-aks-vnet `
- --address-prefixes 100.64.0.0/20
- ```
- ```bash
- az aks create `
- --resource-group aajolly-aks-rg2 `
- --name kubenetCluster `
- --node-count 3 `
- --network-plugin kubenet `
- --service-cidr 172.0.0.0/16 `
- --dns-service-ip 172.0.0.10 `
- --pod-cidr 100.64.0.0/20 `
- --docker-bridge-address 172.99.0.1/16 `
- --vnet-subnet-id <subnetID for a subnet> `
- --service-principal "<appID of Service Principal created in step2>" `
- --client-secret "<password of Service Principal created in step3>"
- ```
+**Create Route Table**
+```bash
+az network route-table create `
+--name aks-private-rt `
+-g aajolly-aks-rg
+```
+**Create Route**
+```bash
+az network route-table route create `
+--name aks-private-route `
+-g aajolly-aks-rg `
+--route-table-name aks-private-rt `
+--address-prefix 0.0.0.0/0 `
+--next-hop-type None
+```
+**Create Subnet**
+```bash
+az network vnet subnet create `
+--name aajolly-aks-pod-subnet 
+-g aajolly-aks1-rg `
+--vnet-name aajolly-aks-vnet `
+--address-prefixes 100.64.0.0/20 `
+--route-table aks1-private-rt
+```
+
+**Create AKS Cluster**
+```bash
+az aks create \
+-g aajolly-aks`-rg \
+--name aks1 \
+--node-count 2 \
+--network-plugin azure \
+--service-cidr 172.0.0.0/16 \
+--dns-service-ip 172.0.0.10 \
+--docker-bridge-address 172.99.0.1/16 \
+--service-principal "<appID of Service Principal created in step2>" \
+--client-secret "<password of Service Principal created in step3>" \
+--generate-ssh-keys \
+--enable-addons monitoring \
+--vnet-subnet-id "/subscriptions/8160335e-abb9-4638-aae0-74d5ffe0aeb8/resourceGroups/aajolly-aks1-rg/providers/Microsoft.Network/virtualNetworks/aajolly-aks1-vnet/subnets/aajolly-aks1-node-subnet" \
+--pod-subnet-id "/subscriptions/8160335e-abb9-4638-aae0-74d5ffe0aeb8/resourceGroups/aajolly-aks1-rg/providers/Microsoft.Network/virtualNetworks/aajolly-aks1-vnet/subnets/aajolly-aks1-pod-subnet"
+```
 
  **Note:** Please note that `service-cidr`, `docker-bridge-address` could be any CIDR blocks. The `dns-service-ip` needs to be from the `services-cidr` block though, hence I've selected 172.0.0.10. 
  The `vnet-subnet-id` is the subnetID from which the nodes are assigned IPs. The `pod-cidr` block needs to be big enough as every node will be assigned a /24 from this block.
