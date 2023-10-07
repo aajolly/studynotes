@@ -211,3 +211,66 @@ job-name:
     - ruby
     - test
 ```
+# CI/CD Parameters and Variables
+## Common Job Keywords
+### Keyword Reference
+[Keyword Reference](https://docs.gitlab.com/ee/ci/yaml/) for the gitlab-ci.yml file
+### Dependencies
+Dependencies restrict which artifacts are passed to a specific job by providing a list of jobs to fetch artifacts from selectively. They are defined in the job and pass a list of all previous jobs the artifacts should be downloaded from. See below for an example YML with dependencies. 
+```yaml
+build:osx:
+  stage: build
+  script: make build:osx
+  artifacts:
+    paths:
+      - binaries/
+
+build:linux:
+  stage: build
+  script: make build:linux
+  artifacts:
+    paths:
+      - binaries/
+
+test:osx:
+  stage: test
+  script: make test:osx
+  dependencies:
+    - build:osx
+
+test:linux:
+  stage: test
+  script: make test:linux
+  dependencies:
+    - build:linux
+
+deploy:
+  stage: deploy
+  script: make deploy
+```
+### Pipeline Editor
+[Pipeline Editor](https://about.gitlab.com/blog/2021/02/22/pipeline-editor-overview/)
+[![Pipeline Editor](http://img.youtube.com/vi/MQpSyvMpsHA/0.jpg)](http://www.youtube.com/watch?v=MQpSyvMpsHAE)
+### Needs
+
+### Parallel
+### Trigger
+
+## Job Policy Patterns
+### Why are jobs so important
+### Use the pipeline graph
+### Troubleshooting Job Failures
+### Job Severity
+### Organizing Your Pipeline
+### Syntax for Grouping Jobs
+### Jobs in Pending State
+### The Basics of CI
+
+## Registries, Deployments, and Security Scanning
+### Package Types
+### GitLab Container Registry
+### CI/CD Variables
+### GitLab Security Scanning
+### Security Trends
+### GitLab Security Scanning Tools
+### Security with DevOps
