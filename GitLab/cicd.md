@@ -56,4 +56,90 @@ GitLab Runner implements a number of executors that can be used to run your buil
 The Shell executor is a simple executor that you use to execute builds locally on that machine where GitLab Runner is installed. It supports all systems on which the Runner can be installed. That means that it's possible to use scrips generated for Bash, PowerShell Core, Windows PowerShell, and Windows Batch (deprecated).
 
 ### Docker
-The Docker executor when used with GitLab CI, connects to Docker Engine and runs each build in a separate and isolated container using the predefined image that is setup in .gitlab-ci.yml and in accordance in config.toml.
+The Docker executor when used with GitLab CI, connects to Docker Engine and runs each build in a separate and isolated container using the predefined image that is setup in .gitlab-ci.yml and in accordance in config.toml. This is the most common executor used.
+
+### Docker Machine
+The Docker Machine is a special version of the Docker executor with support for auto-scaling. It works like the normal Docker executor but with build hosts created on demand by Docker Machine. This executor is typical in cloud deployments.
+
+### Kubernetes
+The Kubernetes executor allows you to use an existing Kubernetes cluster for your builds. The executor will call the Kubernetes cluster API and create a new Pod (with a build container and services containers) for each GitLab CI job.
+
+### Less Common
+#### Virtual Box
+It allows you to use VirtualBox's virtualization to provide a clean build environment for every build. This executor supports all systems that can be run on VirtualBox. The only requirement is that the virtual machine exposes its SSH server and provide a bash-compatible shell.
+
+#### Parallels
+Typically used as a platform on top of virtual box.
+
+#### SSH
+This is a simple executor that allows you to execute builds on a remote machine by executing commands over SSH.
+
+### Summary
+While the two most common executors used today are Docker and Kubernetes, it's important to know that GitLab supports a wide range of executors. Take a look at [Selecting the executor](https://docs.gitlab.com/runner/executors/#selecting-the-executor) for more details.
+
+# Anatomy of a Pipeline
+## Pipelines
+### DAG Pipeline
+If efficiency is important to you and you want everything to run as quickly as possible, you can use Directed Acyclic Graphs (DAG). Use the needs keyword to define dependency relationships between your jobs. When GitLab knows the relationships between your jobs, it can run everything as fast as possible, and even skips into subsequent stages when possible.
+![dag_pipelines](/images/gitlab/gitlab_dag_pipeline.png)
+
+### Parent-Child Pipelines
+A pipeline can trigger a set of concurrently running child pipelines, but within the same project:
+- Child pipelines still execute each of their jobs according to a stage sequence, but would be free to continue forward through their stages without waiting for unrelated jobs in the parent pipeline to finish.
+- The configuration is split up into smaller child pipeline configurations, which are easier to understand. This reduces the cognitive load to understand the overall configuration.
+- Imports are done at the child pipeline level, reducing the likelihood of collisions.
+- Each pipeline has only relevant steps, making it easier to understand what’s going on.
+
+### Child Pipelines
+Child pipelines work well with other GitLab CI/CD features:
+
+- Use the only/except or rules variables to trigger pipelines only when certain files change. This is useful for monorepos, for example.
+- Since the parent pipeline in `.gitlab-ci.yml` and the child pipeline run as normal pipelines, they can have their own behaviors and sequencing in relation to triggers.
+
+### Multi-Project Pipelines
+You can set up GitLab CI/CD across multiple projects, so that a pipeline in one project can trigger a pipeline in another project.
+
+Multi-project pipelines are useful for larger products that require cross-project inter-dependencies, such as those adopting a microservices architecture.
+
+When you configure GitLab CI/CD for your project, you can visualize the stages of your jobs on a pipeline graph.
+![multi-project_pipeline](/images/gitlab/gitlab_multi-project_pipeline.jpeg)
+
+## GitLab Pipeline Graph
+The pipeline graph allows you to see the status of each job and stage as defined in your pipeline.
+
+### Job
+Jobs define what we want to accomplish in our pipeline executed by Runners and are executed in stages. Jobs in each stage are executed in parallel and if all jobs in a stage succeed, the pipeline moves on to the next stage. If one job in a stage fails, the next stage is not (usually) executed.
+
+### Stages
+- Stages define when and how to run jobs.
+- Stages that run tests after stages that compile the code.
+
+### Environments
+Environments are where we deploy to, for example, staging or production. These are specified in the jobs within the ci.yml file.
+
+### Typical Pipeline Defaults
+By default, a pipeline will have three stages: build, test, and deploy. Having default stages does not mean the users have to create a job for each stages, for stages with no jobs will simply be ignored.
+
+## Stages
+Stages are used to separate jobs into logical sections. A stage is defined per-job and relies on stages, which is defined globally. Use stages to define which stage a job runs in, and jobs of the same stage are executed in parallel (subject to certain conditions).
+
+Stages separate jobs into logical sections while Jobs perform the actual tasks.
+### Typical Stages in a pipeline
+#### Build
+Source code and other dependencies are combined and built.
+#### Test
+Automated tests are run to validate the code and behavior.
+#### Review
+The code is put through review apps for peer review and final approvals.
+#### Deploy
+The final product is deployed to a designated environment.
+
+## Jobs and Scripts
+A pipeline configuration begins with jobs. Jobs are the most fundamental element of a .gitlab-ci.yml file. Jobs are:
+
+- Defined with constraints stating under what conditions they should be executed.
+- Top-level elements with an arbitrary name and must contain at least the script clause.
+- Not limited in how many can be defined.
+
+The `script` keyword is the only required keyword that a job needs. It’s a shell script that is executed by the runner.
+
