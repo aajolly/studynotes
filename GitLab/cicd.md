@@ -249,8 +249,8 @@ deploy:
   script: make deploy
 ```
 ### Pipeline Editor
-[Pipeline Editor](https://about.gitlab.com/blog/2021/02/22/pipeline-editor-overview/)
-[![](http://img.youtube.com/vi/MQpSyvMpsHA/0.jpg)](http://www.youtube.com/watch?v=MQpSyvMpsHAE)
+- [Pipeline Editor](https://about.gitlab.com/blog/2021/02/22/pipeline-editor-overview/)
+- [![](http://img.youtube.com/vi/MQpSyvMpsHA/0.jpg)](http://www.youtube.com/watch?v=MQpSyvMpsHAE)
 ### Needs
 
 ### Parallel
