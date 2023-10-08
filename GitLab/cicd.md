@@ -250,27 +250,138 @@ deploy:
 ```
 ### Pipeline Editor
 - [Pipeline Editor](https://about.gitlab.com/blog/2021/02/22/pipeline-editor-overview/)
-- [![](http://img.youtube.com/vi/MQpSyvMpsHA/0.jpg)](http://www.youtube.com/watch?v=MQpSyvMpsHAE)
+- [![Video](http://img.youtube.com/vi/MQpSyvMpsHA/0.jpg)](http://www.youtube.com/watch?v=MQpSyvMpsHAE)
 ### Needs
+The needs keyword enables executing jobs out-of-order, allowing you to implement a directed acyclic graph (DAG) in your CI configuration.
 
+This lets you run some jobs without waiting for other ones, disregarding stage ordering so you can have multiple stages running concurrently. You can ignore stage ordering and run some jobs without waiting for others to complete. Jobs in multiple stages can run concurrently. See below for an example YML with needs utilized.
+```yaml
+linux:build:
+  stage: build
+
+mac:build:
+  stage: build
+
+lint:
+  stage: test
+  needs: []
+
+linux:rspec:
+  stage: test
+  needs: ["linux:build"]
+
+mac:rubocop:
+  stage: test
+  needs: ["mac:build"]
+
+production:
+  stage: deploy
+```
 ### Parallel
+Use parallel to configure how many instances of a job to run in parallel. The value can be from 2 to 50.
+
+The parallel keyword creates N instances of the same job that run in parallel. They are named sequentially from job_name 1/N to job_name N/N:
+```yaml
+# Gemfile
+source 'https://rubygems.org'
+
+gem 'rspec'
+gem 'semaphore_test_boosters'
+
++++++++
+
+# .gitlab-ci.yml
+
+test:
+	parallel: 3
+	script:
+		- bundle
+		- bundle exec rspec_booster --job $CU_NODE_INDEX/$CI_NODE_TOTAL
+```
 ### Trigger
+Use the [trigger](https://docs.gitlab.com/ee/ci/pipelines/downstream_pipelines.html#trigger-a-downstream-pipeline-from-a-job-in-the-gitlab-ciyml-file) keyword in your `.gitlab-ci.yml` file to create a job that triggers a downstream pipeline. This job is called a trigger job.
 
 ## Job Policy Patterns
-### Why are jobs so important
 ### Use the pipeline graph
-### Troubleshooting Job Failures
-### Job Severity
-### Organizing Your Pipeline
-### Syntax for Grouping Jobs
-### Jobs in Pending State
-### The Basics of CI
+Using the pipeline graph allows you to easily determine the status of each job and determine where troubleshooting may be needed and what inefficiencies exist within your gitlab-ci.yml file.
 
+The pipeline graph can show you:
+
+- **Job Status**. Easily see if a job has failed, been blocked, or passed by viewing the icon next to the job.
+- **Fail Reason**. If a job has failed, it will display the reason it failed. 
+- **Order of the jobs**. The pipeline graph displays a visual representation of how the jobs are being executed and in what order, including parallel jobs if you are utilizing DAG. 
+- **Job Logs**. You can click on any job to see the log for when that specific job on the pipeline ran.
+
+### Job Severity
+Depending on how you have your pipeline configured, the order of the jobs on your pipeline graph will display in one of two ways: sorted by name or sorted by severity. The order of severity is shown below:
+The job status order is:
+- failed
+- warning
+- pending
+- running
+- manual
+- scheduled
+- canceled
+- success
+- skipped
+- created
+
+You can’t use these keywords as job names:
+- image
+- services
+- stages
+- types
+- before_script
+- after_script
+- variables
+- cache
+- include
+- true
+- false
+- nil
+- pages:deploy configured for a deploy stage
+
+Job names must be 255 characters or fewer.
+
+Use unique names for your jobs. If multiple jobs have the same name in a file, only one is added to the pipeline, and it’s difficult to predict which one is chosen.
+
+### Organizing Your Pipeline
+If you have many similar jobs, your pipeline graph becomes long and hard to read.
+
+You can automatically [group similar jobs together](https://docs.gitlab.com/ee/ci/jobs/#group-jobs-in-a-pipeline). If the job names are formatted in a certain way, they are collapsed into a single group in regular pipeline graphs (not the mini graphs).
+
+### Jobs in Pending State
+There are a few different reasons why a job will show in pending status on your pipeline graph. The two most commonly used keywords are `allow_failure` and `when:delayed`.
+- Use `allow_failure` when you want to let a job fail without impacting the rest of the CI suite. The default value is false, except for manual jobs that use the `when: manual` syntax.
+- You can use `when: delayed` to execute scripts after a waiting period. Used concurrently with the `start_in` keyword to indicate when the job should be started.
+Example:
+```yaml
+when: delayed
+start_in: 30 minutes
+```
+
+### The Basics of CI
+[Blog](https://about.gitlab.com/blog/2020/12/10/basics-of-gitlab-ci-updated/)
 ## Registries, Deployments, and Security Scanning
-### Package Types
+### GitLab Package Registry
+GitLab Packages allows organizations to utilize GitLab as a private repository for a variety of common package managers. Users are able to build and publish packages, which can be easily consumed as a dependency in downstream projects.
 ### GitLab Container Registry
+A secure and private registry for Docker images built-in to GitLab. Creating, pushing, and retrieving images works out of the box with GitLab CI/CD. With the Docker Container Registry integrated into GitLab, every GitLab project can have its own space to store its Docker images.
+[Introducing GitLab Container Registry Blog](https://about.gitlab.com/blog/2016/05/23/gitlab-container-registry/)
 ### CI/CD Variables
+[Environments and deployments](https://docs.gitlab.com/ee/ci/environments/#)
 ### GitLab Security Scanning
+GitLab provides several built in security scanners, these can be easily added to your `.gitlab-ci.yml` files by using the includes -template feature.
+[GitLab Application Security](https://docs.gitlab.com/ee/user/application_security/#)
 ### Security Trends
+[Top 6 Security Trends in GitLab-hosted projects](https://about.gitlab.com/blog/2020/04/02/security-trends-in-gitlab-hosted-projects/)
+[GitLab's security trends report](https://about.gitlab.com/blog/2020/10/06/gitlab-latest-security-trends/)
 ### GitLab Security Scanning Tools
+The following vulnerability scanners are available in GitLab:
+- Container Scanning
+- Dependency Scanning
+- Dynamic Application Security Testing (DAST)
+- Secret Detection
+- Static Application Security Testing (SAST)
 ### Security with DevOps
+- [![Video](http://img.youtube.com/vi/XnYstHObqlA/0.jpg)](http://www.youtube.com/watch?v=XnYstHObqlA)
