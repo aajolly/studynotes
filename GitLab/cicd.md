@@ -181,12 +181,12 @@ pseudo-deploy:
   script:
   - command deploy_review
   rules:
-	- if: '$CI_COMMIT_REF_NAME == "main"'
-		when: never
-	- when: always
-	envrionment:
-		name: review
-		url: http://$CI_PROJECT_NAME-review.$KUBE_DOMAIN
+  - if: '$CI_COMMIT_REF_NAME == "main"'
+    when: never
+  - when: always
+  envrionment:
+    name: review
+    url: http://$CI_PROJECT_NAME-review.$KUBE_DOMAIN
 ```
 ### Cache and Artifacts
 **cache**: For storing project dependencies.
