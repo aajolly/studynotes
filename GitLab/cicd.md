@@ -293,10 +293,10 @@ gem 'semaphore_test_boosters'
 # .gitlab-ci.yml
 
 test:
-	parallel: 3
-	script:
-		- bundle
-		- bundle exec rspec_booster --job $CU_NODE_INDEX/$CI_NODE_TOTAL
+  parallel: 3
+  script:
+    - bundle
+    - bundle exec rspec_booster --job $CU_NODE_INDEX/$CI_NODE_TOTAL
 ```
 ### Trigger
 Use the [trigger](https://docs.gitlab.com/ee/ci/pipelines/downstream_pipelines.html#trigger-a-downstream-pipeline-from-a-job-in-the-gitlab-ciyml-file) keyword in your `.gitlab-ci.yml` file to create a job that triggers a downstream pipeline. This job is called a trigger job.
@@ -384,4 +384,4 @@ The following vulnerability scanners are available in GitLab:
 - Secret Detection
 - Static Application Security Testing (SAST)
 ### Security with DevOps
-- [![Video](http://img.youtube.com/vi/XnYstHObqlA/0.jpg)](http://www.youtube.com/watch?v=XnYstHObqlA)
+[![Video](http://img.youtube.com/vi/XnYstHObqlA/0.jpg)](http://www.youtube.com/watch?v=XnYstHObqlA)
