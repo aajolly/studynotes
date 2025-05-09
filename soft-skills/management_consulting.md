@@ -1,0 +1,2 @@
+Difference between an assessment project and an implementation project? 
+An assessment tries to diagnose a problem (root causes, how serious the problem is), while an implementation tries to treat the problem? 
