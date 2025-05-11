@@ -33,3 +33,7 @@ Resolve the IPv6 address of `eat.example.com` – like finding the shelf number 
     “Where is ‘eat.example.com’?”
 2. The librarian searches library-to-library (iterative queries) until they find the right one.
 3. Once the authoritative name server (correct library) responds with the exact location (IPv6 address), the librarian gives it to you.
+
+## Local DNS
+![mDNS](/images/ddi/mDNS.png)
+![dns-sd](/images/ddi/dns-sd.png)
