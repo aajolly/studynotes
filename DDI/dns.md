@@ -377,12 +377,66 @@ __**NOTE**__
 ![dns-default-forwarding](/images/ddi/dns-default-forwarding.png)
 
 #### Conditional Forwarding
+- Conditional forwarding allows recursive resolvers to forward specific domain names to specific targets
+- DNS administrators can use conditional forwarding to control flow of DNS queries
+- Common use is for internal domains such as `partner.local` that can cannot be resolver by quering root
+    - Likely receive NXDOMAIN from root
+- Most DNS server products allow conditional forwarding by creating a forward zone
+![dns-conditional-forwarding](/images/ddi/dns-conditional-forwarding.png)
+![dns-conditional-forwarding-example](/images/ddi/dns-conditional-forwarding-example.png)
+
 #### Delegation vs Forwarding
+| Delegation | Forwarding |
+| :----: | :----: |
+| Delegation is only from authoritative to authoritative server (think parent to child) | Forwarding can be from recursive to other recursive resolver |
+| Stub resolvers/clients cannot follow delegation | Forwarding can also be from recursive to authoritative server |
+
+##### Load Balancer: Delegate or Forward?
+- Scenario:
+    - We want the name `fast.example.com` to be served by GSLB (Global Server Load Balancing)
+    - GSLB will look at the incoming DNS query's geolocation and return the closes DNS answer
+    - For example, query originating in Japan, `fast.example.com` = Asia IP
+- DNS administrators are asked to configure authoritative DNS server to work with load balancer
+- Must decide between delegation or forwarding? Lets see some examples
+![dns-delegation-gslb-example1](/images/ddi/dns-delegation-gslb-example1.png)
+Following the example above, here's another example where the query is being generated from Taipei
+![dns-delegation-gslb-example2](/images/ddi/dns-delegation-gslb-example2.png)
+Now lets examine the same example from above but with forwarding
+![dns-forwarding-gslb-example1](/images/ddi/dns-forwarding-gslb-example1.png)
+> __**NOTE**__: As a best practice internet facing authoritative name servers should not have recursion enabled.
+
+The conditional forwarding will result in a REFUSED response.
+What if it is enabled for recursion?
+The GSLB will view the request coming from Paris and it'll respond with the Paris IP instead of Taipei as shown below.
+![dns-forwarding-gslb-example2](/images/ddi/dns-forwarding-gslb-example2.png)
+
 #### Advanced Query Path
+- Determining the correct query path should be the first step in DNS troubleshooting
+- Otherwise, you risk wasting time troubleshooting the wrong server or drawing the wrong conclusion
+- DNS forwarding is a per-hop behaviour, unlike network traceroute, meaning you have to check each DNS server and zone configuration along the way
 
 ### ACLs and DNS Views
 #### Access Control List (ACL)
+Simple ACL example in BIND:
+```bash
+options {
+    allow-query { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+};
+```
+- Allowing All RFC1918 to query this server
+![dns-acl-ordering](/images/ddi/dns-acl-ordering.png)
+
 #### DNS Views
+- A DNS view is a set of zones with an ACL
+- The purpose is to allow DNS servers to provide different answers based on the source of the query
+- Most organizations have two or three views
+- Sometimes called `split DNS`, `split horizon`, or `split-brain DNS`
+![dns-view](/images/ddi/dns-view.png)
+> __**NOTE**__
+> - Once client matches on a DNS view, it receives answer from that view
+> - There is no "try another view" option
+> - For example, client queries for **lab.example.com** in Internal view and the answer is NXDOMAIN, that is authoritative
+    - DNS server get **lab.example.com** out of a different view for the same client
 
 ### Local DNS
 ![mDNS](/images/ddi/mDNS.png)
