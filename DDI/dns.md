@@ -444,3 +444,141 @@ options {
 ![dns-troubleshooting](/images/ddi/dns_tshoot.png)
 ![dns-clear-cache](/images/ddi/dns_clear_cache.png)
 ![dns-dig](/images/ddi/dns_dig.png)
+
+### DNS Troubleshooting Tips
+Once you have confirmed the issue is rooted in DNS, approach DNS troubleshooting in this order:
+1. Lookup tools like dig
+2. Query path
+    - Figure out how queries are being passed before further analysis
+    - Query path tells us where to go next
+    - There's no easy way to trace, you may need to log in to each DNS server to learn the true path
+3. Logs
+    - DNS server keeps different levels of logs
+    - Consider enabling query logging during troubleshooting
+        - But disable it when finished, query logging could impact performance
+    - Send logs to centralized server for archive
+        - Run log analyzer in one place
+        - Keep historical data
+4. Packet capture
+    - Last resort for DNS troubleshooting
+    - DNS header tells us a lot, usually do not need to go this deep
+    - If a query goes unanswered, there's no logs or DNS message to analyze, may need packet capture to see if it's a network issue
+
+### DNS Network Considerations
+#### DNS and Network Assignment
+- Keep DNS reverse-mapping in mind when allocating addresses
+- If possible, assign in CIDR blocks to organizations, such as entire /24
+- This has direct impact on network efficiency such as routing tables
+- Also makes reverse-mapping DNS easier to manage
+
+#### Network Considerations along query path
+This section is related to larger DNS messages as they traverse through network:
+- **EDNS0**
+    - Traditional DNS UDP messages are limited to 512 bytes
+    - Extension mechanism for DNS version 0 (EDNS0)
+        - EDNS0 allows larger size up to 4096 bytes (1220 bytes recommended)
+    - New feature such as DNSSEC requires EDNS0
+    - Per-hop configuration (each server must support EDNS0)
+    - If disables, causes subtle issues in DNS where larger responses may not get through, or switch to TCP
+    - Post 2019, EDNS0 is mandatory, ENDS0 is defined in RFC 6891
+- **TCP**
+    - DNS has always required the use of TCP/53
+    - TCP is required for zone transfers
+    - As fallback mechanism when UDP cannot fit message in a single packet
+    - Modern DNS messages are getting bigger:
+        - Large RRset with AAAA records
+        - TXT records
+        - New records (DNSKEY and RRSIG)
+    - Inconsistent DNS resolution if TCP/53 is blocked, some answers get though, some don't
+- **MTU and MSS Size**
+    - Maximum Transmission Units (MTU) dictates size of data chunks, should IP fragmentation occur
+    - Large data size requires breaking down to small chunks of MTU-size, and re-assembled on the far end
+    - Configured per network
+    - If mis-configured, large DNS responses may be lost, not assembled correctly on the far end, or requires frequent retransmission
+
+### DNS Split Authority
+- Common issue experienced by corporate users
+    - When I'm in building A, I can resolve name `x.example.com`, but not when I'm in building B
+- This is most likely due to DNS split authority or DNS views
+- This may be intentional, and probably implemented using DNS views
+- If this is not intentional, it is often caused by zone files out of synchronization
+    - More common in timed-synchronization such as AD-replication
+    - Or two separately maintained authoritative name servers not integrated
+- Split DNS can become very complex, especially when dealing with reverse-mapping zones
+- In many instances, forward lookup may work, but reverse-lookup fails
+- Many applications rely on successfully forward and reverse lookup, and if reverse lookup fails, application may fail in subtle ways
+    - Ex: RDP may not connect to bob-laptop.foo.com if reverse lookup fails
+
+## DNS Anycast
+- Anycast puts the same IP address on multiple servers
+- Let routing take user to the nearest available node
+- Not unique to DNS protocol, but most commonly implemented on DNS
+- Examples:
+    - CloudFlare DNS: 1.1.1.1
+    - Google DNS: 8.8.8.8
+
+| Advantages | Disadvantges |
+| :----- | :----- |
+| Increased reliability | Increased complexity |
+| Load desitribution | Difficult to troubleshoot |
+| Improved performance | Routing issues may impact DNS |
+| Simplified client configuration | |
+| Resilience against volumetric attacks | |
+
+## DNS Security Considerations
+- There are many security threats that are DNS-related
+- DNS security is of much higher concern than DHCP security
+    - DHCP security is localized, DNS security is global
+- Here's a small subset of DNS security threats
+
+### Impersonator attack
+- Attacker can register lookalike names that look very similar to legitimate domain names
+- Includes attacks such as homograph attack
+- IDN makes this even harder to detect with internationalized characters
+- Some attackers use web browser tricks to hide the URL bar
+- Examples:
+    - PayPa`L`.com and PayPa`I`.com
+    - g`oo`gle.com and g`oo`gle.com (uses Greek leterr omicron, punycode xn--ggle-Onda.com)
+### DNS Tunneling and Malware
+- DNS Tunneling: Technique used for sending other data over DNS
+- Malware uses DNS tunneling for command & control (C&C)
+![dns-tunneling](/images/ddi/dns-tunneling.png)
+
+### Data Exfiltration
+- Similar tunneling can be used to exfiltrate data through DNS
+- Response data is not important in exfiltration
+![dns-data-exfiltration](/images/ddi/dns-data-exfiltration.png)
+
+#### DNS Threat Intelligence
+- Impersonator attacks, tunneling, and data exfiltration all rely on attacker's domains
+- DNS Threat Intelligence is a collection of databases of `bad` domains
+- Security researchers work hard to keep this information up to date
+- Recursive resolvers can be armed with this information so they don't return malicious domain names
+- The mechanism to download database to recursive resolver is RPZ
+
+#### Response Policy Zone (RPZ)
+- RPZ, is the standard for synchronizing DNS security policy data via DNS zone transfer (TCP/53)
+- Recursive resolver can log and deny queries for malicious domains
+![dns-rpz](/images/ddi/dns-rpz.png)
+> __**NOTE**__: The above example is not effective against data exfiltration, additional configuration is needed
+
+### Amplification and Reflection
+- **Amplification** is when a small query can result in a large response
+- **Reflection** is when attacker spoofs IP of victim and redirects traffic
+- Attacker sends small queries to recursive resolvers, generating large load that knocks victim offline
+- These are ACL and rate-limiting techniques that can mitigate this attack
+![dns-amplification](/images/ddi/dns-amplification.png)
+
+### Cache Poisoning and DNSSEC
+- **Cache poisoning** is the general technique of attacker tricking recursive resolver to store malicious answers in cache
+- Very difficult for user to detect that they are given incorrect answers
+- This problem is rooted in the lack of authentication in DNS
+    - This is no solution except for a protocol update
+- DNSSEC is the protocol extension that adds authentication to DNS
+    - Secures communication among DNS servers
+
+### mDNS Security Considerations
+- mDNS is UDP-based multicast communication, easy to spoof
+- If attacker gets access to local subnet, it can easily return false answers
+- Malicious client can launch amplication and reflection attack against other mDNS client
+- If exposed to Internet, could leak private information meant for local use only

@@ -338,9 +338,104 @@ Only a limited set of devices should be allowed to send DDNS updates. The less, 
     - At worst the record is lost and not created. Especially if RFC 4701 is used, DHCID records are lost
 - Choose either client or server, not both
 
-## Troubleshooting Tips
-### DHCP Troubleshooting Tips
+## DHCP Troubleshooting Tips
+### Network and DHCP Server logs
+- If the client is unable to receive DHCP lease, check to see if the DHCP messages arrive at DHCP server
+    - If not, check the network
+    - If so, check DHCP server configuration
+- On the DHCP server, check to see if the DORA handshake is complete
+    - If some messages are missing, it may be a network issue or a bad client
+    - If all messages are present, it may be DHCP server configuration issue
 
-### DNS Troubleshooting Tips
-### DNS Network Considerations
-### DNS Split Authority
+### Relay Agent
+- Relay agent is critical to DHCP functionality
+- Check router and switch configuration to make sure DHCP messages are relayed to the right places
+- Sometimes relay forwards messages to multiple DHCP servers, need to check all DHCP servers
+- For DHCPv6, ensure router advertisement (RA) is configured correctly:
+    - `M` flag - Stateful DHCPv6
+    - `O` Flag - Stateless DHCPv6
+
+### Rogue DHCP Server
+- Always make sure corporate DHCP server is set as authoritative
+- Home routers in office can wreak havoc
+- Packet capture show a series of DHCPNAK between two DHCP servers
+- Utilize netflow to help catch rogue servers
+- Some vendors provide features such as DHCP snooping or port security
+
+### Troubleshhoting DHCP Options
+- If the client is not receiving the correct DHCP option, the best (and only) way is to use a protocol analyzer
+- Capture traffic on the wire, as DHCP options are not logged
+![troubleshoot-dhcp-options](/images/ddi/troubleshoot-dhcp-options.png)
+
+## DHCP Failover
+### Challenge of DHCP Fault Tolerance
+- Relay must forward to at least 2 x DHCP servers
+- Setting up multiple competing DHCP servers is bad
+    - No coordinated efforts leads to address conflicts
+    - If both are authoritative, both send DHCPNAK
+- Split scope is not efficient
+    - When one server is down, clients cannot renew with the remaining server
+    - When one server is down, capacity is reduced by half
+    - Client must go to DHCPDISCOVER and may experience disruption
+
+### DHCP Failover Protocol (DHCPv4 only)
+- Designed for cross-site redundancy
+- Active-Active (RFC 3074)
+- Although only [IETF draft](https://tools.ieft.org/html/draft-ieft-dhc-failover-12), it is implemented by all major DHCP vendors
+- Only supports 2 x DHCP servers
+- Relay agent must forward to both DHCP servers at the same time
+- Complex to configure and operate
+![dhcp-failover](/images/ddi/dhcp-failover.png)
+
+### DHCPv6 Redundancy
+- DHCPv6 requires very different redundancy solutions. Thanks to abundant addresses, split scopes is the easiert to implement without much penalty
+- Other possible choices include:
+    - Multiple prefixes
+    - Overlapping prefixes
+    - SLAAC + stateless DHCPv6
+    - DHCPv6 Failover (draft)
+
+## DHCP Security Considerations
+### Unauthorized DHCP Server
+- Imagine a scenario where the attacker sets up a malicious DHCP server on the user's subnet
+- When user sends DHCPDISCOVER, it is a broadcast and reaches malicious DHCP server without relay
+![unauthorized-DHCP](/images/ddi/unauthorized-DHCP.png)
+- Malicious DHCP server is on local subnet and will likely respond faster
+- Client has no way to authenticate if DHCPDISCOVER is legitimate and must accept offer from attacker
+- Attacked can send back malicious options, such as gateway or DNS servers
+![unauthorized-DHCP2](/images/ddi/unauthorized-DHCP2.png)
+
+### DHCP Starvation/Exhaustion
+- Malicious client makes many DHCPDISCOVER or DHCPREQUEST, changing each message slightly to obtain leases
+- Causes Denial of Service (DoS) on the DHCP server
+    - Could lead to attack on DNS through DDNS update
+- Tools such as `dhcpstarv` and `dhcpig` make these attacks easy
+
+### Unauthorized Client
+- Attacker can obtain IP address from DHCP server when it should be denied
+    - Policy and DHCP filter should have been put in place
+- Attacker spoofs other client's MAC address
+    - Policy and DHCP filter cannot stop this
+- This is really a network access issue, with or without DHCP
+- Implementing Network Access Control (NAC) such as 802.1x can help mitigate the issue as DHCP doesn't have a way to authenticate requests.
+> __**NOTE**__: RFC 3118 proposes authenticated DHCPv4, but no major implementation supports it.
+
+### Strengthening DHCP Security
+- Detection is the hardest part
+    - Rogue DHCP server usually show up on local subnet
+    - We need to go to layer 2 -> Switches
+    - Can use netflow to detect
+- DHCP Snooping
+    - Network switches can be configured with trusted DHCP server information
+    - Switches block authorized DHCPOFFER, DHCPACK, and DHCPNAK
+    - Switches also block client from requesting too many addresses
+- Consider port security or 802.1x NAC, if you want only authorized clients on the network
+
+## DHCPv6 Security Considerations
+- Malicious DHCPv6 server can forge RECONFIGURE messages
+- If DHCPv6 authentication option is used, this attack is mitigated
+- Broadcast attacks don't work because DHCPv6 uses multicast
+- Starvation attacks are less effective
+- More security considerations are documented in RFC 8415 Section 22
+- Propsed secure DHCPv6 with end-to-end encryption in [IETF draft](https://tools.ietf.org/html/draft-ieft-dhc-sedhcpv6-21)
+![dhcpv6-security](/images/ddi/dhcpv6-security.png)
