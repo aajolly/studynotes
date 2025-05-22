@@ -48,3 +48,161 @@ You can configure VMs using:
     - Your project’s quota, which is zone-specific
 - You can request quota increases via the Google Cloud Console.
 > For current specs: https://cloud.google.com/compute/docs/machine-types
+
+# Containers
+**Containers** are a lightweight, portable way to package and run applications and their dependencies in isolated environments. They provide the flexibility of Infrastructure as a Service (IaaS) with the scalability of Platform as a Service (PaaS).
+
+## Containers vs. Virtual Machines (VMs)
+| **Feature** | **Virtual Machines** | **Containers** |
+| :------ | :------- | :-------- |
+| **Isolation** | Full OS per app | Shared OS kernel |
+| **Startup Time** | Minutes | Seconds |
+| **Size** | GBs (includes OS) | MBs (app + dependencies) |
+| **Scalability** | Slower, heavier | Fast, lightweight |
+| **Portability** | Limited | High (runs anywhere with container runtime) |
+
+## How Containers Work
+- A container wraps your code + dependencies into a single unit.
+- It runs on a shared OS kernel using a container runtime (e.g., Docker).
+- Containers are process-level isolated, not full OS virtualized.
+- They can be started, stopped, and scaled very quickly.
+
+## Benefits of Containers
+- **Portability**: Move from dev → staging → production without changes.
+- **Efficiency**: Use fewer resources than VMs.
+- **Speed**: Start in seconds, ideal for scaling.
+- **Modularity**: Break apps into microservices, each in its own container.
+- **Scalability**: Easily scale individual services across hosts.
+
+## Use Case Example
+- You want to scale a web server:
+    - With VMs: You clone and boot entire OS instances.
+    - With containers: You spin up dozens of lightweight containers in seconds.
+
+## Microservices Architecture
+- Build apps as collections of containers, each handling a specific function.
+- Connect them via networking.
+- Scale and deploy independently.
+- Run across multiple hosts with orchestration (e.g., Kubernetes).
+
+## Kubernetes
+**Kubernetes** is an open-source platform for **orchestrating containerized applications**. It automates deployment, scaling, and management of containers across clusters of machines.
+
+### Key Concepts in Kubernetes
+| **Concept** | **Description** |
+| :------- | :-------- |
+| **Cluster** | A set of nodes (VMs) managed by a control plane. |
+| **Node** | A compute instance (e.g., VM) that runs containerized workloads. |
+| **Pod** | The smallest deployable unit in Kubernetes. Typically runs one container, but can run multiple tightly coupled containers. |
+| **Deployment** | A controller that manages a group of pods, ensuring the desired number of replicas are running. |
+| **Service** | An abstraction that defines a logical set of pods and a policy to access them. Provides a stable IP address and DNS name. |
+| **Load Balancer** | Exposes services to external traffic. In GKE, this is automatically provisioned. |
+| **kubectl** | The command-line tool to interact with Kubernetes clusters. |
+
+### How GKE Simplifies Kubernetes
+**Google Kubernetes Engine (GKE)** is a managed Kubernetes service that:
+- Bootstraps and manages the Kubernetes control plane.
+- Handles upgrades, patching, and scaling.
+- Integrates with Google Cloud services (e.g., IAM, Cloud Monitoring, Cloud Load Balancing).
+
+### Deployment Lifecycle
+1. Create a Pod: `kubectl run`
+2. Create a Deployment: Manages pod replicas and updates.
+3. Expose a Service: `kubectl` expose to create a stable endpoint.
+4. Scale: `kubectl scale` or use autoscaling based on CPU/memory.
+5. Update: Use `kubectl rollout` or update the deployment config and apply with `kubectl apply`.
+
+### Imperative vs Declarative
+| **Mode** | **Description** |
+| :------- | :--------- |
+| **Imperative** | Direct commands (e.g., kubectl run, kubectl scale) |
+| **Declarative** | Define desired state in YAML/JSON config files and apply with kubectl apply |
+
+### Rolling Updates
+- Kubernetes supports rolling updates to minimize downtime.
+- New pods are created before old ones are terminated.
+- Controlled via deployment strategies in the config file.
+
+### Use Cases
+- Microservices architecture
+- CI/CD pipelines
+- Scalable web applications
+- Real-time data processing
+
+### GKE Architecture Overview
+- **Cluster**: A group of Compute Engine VMs (nodes) managed by Kubernetes.
+- **Control Plane**: Managed by Google in GKE—handles scheduling, scaling, and health monitoring.
+- **Node Pools**: Subsets of nodes within a cluster, useful for workload separation and flexibility.
+
+### GKE Modes
+| **Mode** | **Description** | Who Manages What |
+| **Autopilot** | Fully managed, production-optimized mode | Google manages infrastructure, scaling, upgrades, security |
+| **Standard** | More control and customization | You manage node configuration, scaling, and maintenance |
+> **Recommendation**: Use Autopilot unless you need fine-grained control over infrastructure.
+
+### Key Features of GKE
+- **Managed Control Plane**: No need to provision or manage Kubernetes masters.
+- **Autoscaling**: Automatically adjusts the number of nodes or pods based on demand.
+- **Auto-upgrades & Auto-repair**: Keeps your cluster secure and healthy.
+- **Load Balancing**: Integrated with Google Cloud Load Balancer for external access.
+- **Logging & Monitoring**: Built-in integration with Google Cloud Observability.
+- **Declarative Management**: Use YAML config files and kubectl apply to define desired state.
+
+### Common Commands
+| **Task** | **Command** |
+| :------- | :-------- |
+| Create a cluster | `gcloud container clusters create k1` |
+| View pods | `kubectl get pods` |
+| Scale deployment| `kubectl scale deployment <name> --replicas=3` |
+| Update app | `kubectl rollout restart deployment <name>` |
+| Apply config | `kubectl apply -f deployment.yaml` |
+| Get service IP | `kubectl get services` |
+
+## Cloud Run
+**Cloud Run** is a fully managed, serverless platform that runs **stateless containers** in response to **HTTP requests** or **Pub/Sub events**. It abstracts away infrastructure management so developers can focus on writing code.
+
+> **Built on**: https://knative.dev/, an open-source Kubernetes-based platform for serverless workloads.
+
+### Key Features
+| **Feature** | **Description** |
+| :--------- | :------- |
+| **Serverless** | No need to manage servers, clusters, or scaling. |
+| **Fast Scaling** | Scales from zero to thousands of containers instantly. |
+| **Pay-per-use** | Billed per 100ms of container execution time. |
+| **HTTPS by Default** | Each service gets a secure, unique URL. |
+| **Flexible Deployment** | Deploy from container image or source code (via Buildpacks). |
+| **Language Agnostic** | Supports any language or binary compiled for Linux 64-bit. |
+
+### Developer Workflow
+1. **Write** your app in any language (e.g., Python, Go, Java, Node.js).
+2. **Package** it into a container image.
+3. **Deploy** it to Cloud Run via:
+    - Container image (pushed to Artifact Registry)
+    - Source code (Cloud Run builds it using Buildpacks)
+
+Once deployed, Cloud Run:
+- Assigns a **unique HTTPS endpoint**
+- **Auto-scales** based on incoming traffic
+- **Shuts down** when idle (no cost during idle time)
+
+### Deployment Options
+| **Option** | **Description** |
+| :------ | :------- |
+| **Fully Managed** | Google handles all infrastructure. |
+| **GKE-based** | Run Cloud Run on GKE for more control. |
+| **Anywhere Knative Runs** | Deploy to your own Kubernetes cluster using Knative. |
+
+### Pricing Model
+- **Granular billing**: Charged per 100ms of CPU, memory, and request count.
+- **No charge** when containers are idle.
+- **Request-based fee**: Small fee per 1 million requests.
+- **Resource-based fee**: Higher CPU/memory = higher cost.
+
+### Use Cases
+- REST APIs and microservices
+- Event-driven processing (e.g., Pub/Sub)
+- Webhooks and backend services
+- Lightweight data processing tasks
+- Running legacy binaries in a modern environment
+
+
