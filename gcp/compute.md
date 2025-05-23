@@ -18,6 +18,8 @@
 | Preemptible VMs | Short-lived, cost-effective VMs (max 24 hours). |
 | Spot VMs | Similar to Preemptible but with no max runtime and more features. |
 
+![sustained-use-discounts](/images/gcp/sustained-use-discount.png)
+
 ## Storage & Performance
 - High throughput between VMs and persistent disks is default—no special configuration or machine type required.
 - Storage options are flexible and decoupled from compute.
@@ -31,6 +33,119 @@
 You can configure VMs using:
 - Predefined machine types: Standard, High-CPU, High-Memory, and more.
 - Custom machine types: Specify exact vCPU and memory to optimize cost and performance.
+
+## VM Access
+| **OS** | **Access Method** | **Notes** |
+| :---- | :------ | :------- |
+| **Linux** | SSH via Cloud Console or gcloud | Creator has root access; can grant SSH to others |
+| **Windows** | RDP using generated username/password | Credentials managed via Cloud Console |
+> Firewall Rules: Required for SSH (TCP 22) and RDP (TCP 3389); preconfigured in the default network.
+
+## VM Lifecycle States
+![gcp-compute-lifecycle](/images/gcp/gcp-compute-lifecycle.png)
+
+| **State** | **Description** |
+| :------ | :------- |
+| **Provisioning** | Resources (CPU, RAM, disk) are being allocated |
+| **Staging** | IPs assigned, system image booted |
+| **Running** | VM is active, supports live migration, snapshots, metadata changes |
+| **Stopping/Terminated** | VM is shutting down or stopped; can be restarted or deleted |
+| **Suspending/Suspended** | VM state saved to disk; can be resumed |
+| **Repairing** | VM is temporarily unavailable due to internal error or host maintenance |
+> **Reset**: Like pressing a reset button—clears memory but keeps VM running.
+> **Shutdown Time**: ~90 seconds (30 seconds for preemptible VMs before forced off).
+
+## Availability Policies
+| **Policy** | **Default** | **Description** |
+| :------ | :------ | :------ |
+| **On Host Maintenance** | Live migrate | Can be changed to terminate |
+| **Automatic Restart** | Enabled | VM restarts after crash or maintenance |
+> Configurable during or after VM creation.
+
+## OS Patch Management
+- **Premium OS Images**: Include patch management and licensing costs.
+- **Patch Management Tools**:
+    - **Patch Compliance Reporting**: Shows patch status and recommendations.
+    - **Patch Deployment**: Automates patching across VM fleets.
+- **Patch Management Features**:
+    - **Patch Approvals**: Select which patches to apply.
+    - **Flexible Scheduling**: One-time or recurring jobs.
+    - **Advanced Configs**: Pre/post patch scripts.
+    - **Centralized Management**: Manage all patch jobs from one place.
+
+## Billing Considerations
+- **Stopped VMs**: No charge for CPU/RAM, but disks and static IPs still incur charges.
+- **Terminated VMs**: Allow changes like machine type, but not the base image.
+![gcp-terminated-vm-actions](/images/gcp/gcp-compute-actions.png)
+
+## Compute Options
+![gcp-compute-machine-type](/images/gcp/compute-machine-type.png)
+![compute-machine-families](/images/gcp/compute-machine-families.png)
+![compute-general-purpose-family](/images/gcp/general-purpose-machine-family.png)
+![compute-optimized-machine-family](/images/gcp/compute-optimized-machine-family.png)
+![memory-optimized-machine-family](/images/gcp/memory-optimized-machine-family.png)
+![acclerator-optimized-machine-family](/images/gcp/accelerator-optimized-machine-family.png)
+![custom-machine-type](/images/gcp/custom-machine-type.png)
+
+## Special Compute Configurations
+### Sole-Tenant Nodes
+- Dedicated physical servers for your project
+- Use cases:
+    - Compliance (e.g., PCI, HIPAA)
+    - Licensing (BYOL)
+    - Workload isolation
+- Benefits:
+    - Physical separation from other tenants
+    - Support for custom machine types
+    - In-place restart to optimize core usage
+
+### Shielded VMs
+- Enhanced security against rootkits and boot-level malware
+- Features:
+    - Secure Boot
+    - vTPM (virtual Trusted Platform Module)
+    - Integrity Monitoring
+- Use case: When you need verifiable integrity of your VM’s boot process
+> Part of Google’s Shielded Cloud Initiative
+
+### Confidential VMs
+- Encrypts data in use (not just at rest or in transit)
+- Powered by: AMD EPYC “Rome” processors with SEV (Secure Encrypted Virtualization)
+- Use case:
+    - Protecting sensitive data during processing
+    - Secure collaboration without code changes
+- Benefits:
+    - Inline memory encryption
+    - No performance compromise
+    - Google has **no access** to encryption keys
+
+## Images
+### VM Boot Disk Images
+- **Contents**: Boot loader, OS, file system, pre-configured software, and customizations.
+- **Types**: Public or custom; Linux and Windows options available.
+- **Premium Images**:
+    - Charged per second after 1-minute minimum.
+    - SQL Server images: charged per minute after 10-minute minimum.
+    - Prices vary by machine type but are globally consistent.
+
+### Custom Images
+- Created by pre-installing authorized software.
+- Can be imported from on-premises, workstations, or other cloud providers (no cost).
+- Shareable across projects.
+
+### Machine Images
+- Store full VM configuration, metadata, permissions, and disk data.
+- Ideal for:
+    - VM creation
+    - Backup and recovery
+    - Instance cloning and replication
+
+## Disk Options
+![boot-disk](/images/gcp/boot-disk.png)
+![persistent-disk](/images/gcp/persistent-disk.png)
+![local-ssd](/images/gcp/local-ssd.png)
+![ram-risk](/images/gcp/ram-disk.png)
+![summary](/images/gcp/summary-disk-options.png)
 
 ## Autoscaling
 - **What it does**: Automatically adjusts the number of VM instances in a managed instance group based on load metrics like CPU utilization or custom metrics.
@@ -204,5 +319,3 @@ Once deployed, Cloud Run:
 - Webhooks and backend services
 - Lightweight data processing tasks
 - Running legacy binaries in a modern environment
-
-
