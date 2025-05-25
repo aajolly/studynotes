@@ -1,4 +1,4 @@
-# Google Cloud Monitoring
+# Google Cloud Monitoring (Stackdriver)
 ## Core Concepts
 1. **Metrics Scope**
     - A metrics scope is the root entity for monitoring configuration.
@@ -35,7 +35,7 @@ From internal files like Versent - APA CloudOps and Cover-more - Migration phase
 - **Governance loops**: Include observability KPIs in stakeholder reviews and steering committees 2.
 - **AI-Ops**: Explore predictive analytics and anomaly detection to proactively manage incidents 2.
 
-## AWS CloudWatch Comparison
+## Amazon CloudWatch Comparison
 | **Feature** | **Google Cloud Monitoring** | **Amazon CloudWatch** |
 | :-------- | :---------- | :--------- |
 | **Metrics Scope** | Multi-project, multi-cloud | Per AWS account/region |
@@ -45,3 +45,24 @@ From internal files like Versent - APA CloudOps and Cover-more - Migration phase
 | **Custom Metrics** | Push via API or Ops Agent | PutMetricData API |
 | **Agent** | Ops Agent (system + app metrics) | CloudWatch Agent |
 | **Pricing** | $0.01 per 1,000 read API calls | $0.30 per high-res alarm/month 3 |
+
+# Google Cloud Logging
+## Core Capabilities
+Cloud Logging is a fully managed, scalable service that allows you to:
+- **Ingest logs** from GCP, AWS, and on-prem systems.
+- **Search and analyze logs** using the Logs Explorer UI or Logging API.
+- **Create log-based metrics** for alerting and dashboards.
+- **Export logs** to:
+    - **Cloud Storage** (for long-term archival beyond 30 days),
+    - **BigQuery** (for SQL-based analytics and Looker Studio dashboards),
+    - **Pub/Sub** (for real-time streaming to downstream systems).
+- **Retention**: Logs are retained for 30 days by default unless exported.
+
+# Google Cloud Error Reporting
+![gcp-error-reporting](/images/gcp/gcp-error-reporting.png)
+
+# Google Cloud Tracing
+![gcp-tracing](/images/gcp/gcp-tracing.png)
+
+# Google Cloud Profiling
+![gcp-profiling](/images/gcp/gcp-profiling.png)
