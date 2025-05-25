@@ -1,3 +1,6 @@
+# Google Cloud Storage and Database Options
+![gcp-storage-db-options](/images/gcp/gcp-storage-db-options.png)
+![gcp-storage-db-decision-chart](/images/gcp/gcp-storage-db-decision-chart.png)
 # Google Cloud Storage
 **Cloud Storage** is Google Cloud’s **object storage** service designed for durability, scalability, and high availability. It’s used to store and retrieve **binary large objects (BLOBs)** such as images, videos, backups, and large datasets.
 
@@ -45,6 +48,56 @@
 - Data lake storage for analytics
 - Intermediate storage for data pipelines
 
+## Encryption Options
+- **Google Cloud**: Supports Customer-Supplied Encryption Keys (CSEK) for Cloud Storage.
+- **AWS Equivalent**: AWS S3 supports similar functionality via Server-Side Encryption with Customer-Provided Keys (SSE-C) and AWS Key Management Service (SSE-KMS).
+
+## Object Lifecycle Management
+- **Google Cloud**: Automates actions like deleting, archiving, or changing storage class based on object age or version count.
+- **AWS Equivalent**: Amazon S3 Lifecycle Policies allow similar rules for transitioning objects between storage classes (e.g., S3 Standard to Glacier) or deleting them after a set period.
+
+## Object Versioning
+- **Google Cloud**: Maintains multiple versions of objects; each version is uniquely identified by a generation number.
+- **AWS Equivalent**: S3 Versioning allows you to preserve, retrieve, and restore every version of every object stored in a bucket.
+
+## Soft Delete
+- **Google Cloud**: Retains deleted or overwritten objects for a configurable retention period (default 7 days).
+- **AWS Equivalent**: S3 Object Lock with a "Governance" or "Compliance" mode can prevent object deletion for a specified period. AWS also supports MFA Delete for added protection.
+
+## Object Immutability
+- **Google Cloud**: Objects are immutable; overwriting creates a new version.
+- **AWS Equivalent**: S3 also treats objects as immutable unless overwritten or deleted, and Object Lock can enforce immutability.
+
+## Directory Synchronization
+- **Google Cloud**: Syncs VM directories with buckets.
+- **AWS Equivalent**: AWS CLI and AWS DataSync can be used to sync local directories or EC2 volumes with S3 buckets.
+
+## Notifications
+- **Google Cloud**: Uses Pub/Sub for object change notifications.
+- **AWS Equivalent**: S3 Event Notifications can trigger AWS Lambda, SNS, or SQS when objects are created, deleted, or modified.
+
+## Autoclass
+- **Google Cloud**: Automatically manages storage class transitions.
+- **AWS Equivalent**: S3 Intelligent-Tiering automatically moves data between access tiers based on usage patterns.
+
+## Retention Lock
+- **Google Cloud**: Object Retention Lock enforces retention policies for compliance.
+- **AWS Equivalent**: S3 Object Lock provides WORM (Write Once Read Many) protection for regulatory compliance.
+
+## Data Transfer Services
+- **Google Cloud**:
+    - `Transfer Appliance`: Physical device for large-scale data migration.
+    - `Storage Transfer Service`: Online transfer from other clouds or HTTP sources.
+    - `Offline Media Import`: Third-party service for physical media.
+- **AWS Equivalent**:
+    - `AWS Snowball/Snowmobile`: Physical devices for petabyte-scale transfers.
+    - `AWS DataSync`: Online data transfer from on-prem or other clouds.
+    - `AWS Transfer Family`: Supports SFTP, FTPS, and FTP for file transfers.
+
+## Strong Consistency
+- **Google Cloud**: Strong global consistency for reads, writes, and deletes.
+- **AWS Equivalent**: Amazon S3 also provides strong read-after-write consistency for all objects.
+
 ## Cloud Storage Classes
 Google Cloud offers four primary storage classes, each optimized for different access patterns and cost profiles:
 
@@ -64,6 +117,7 @@ All classes offer:
 - Geo-redundancy in multi-region or dual-region setups
 
 ### Auto-Class
+![gcp-storage-auto-class](/images/gcp/gcp-storage-auto-class.png)
 - **What it does**: Automatically transitions objects between storage classes based on access patterns.
 - Benefits:
     - Reduces storage costs by moving cold data to cheaper classes.
@@ -91,6 +145,25 @@ Cloud Storage integrates tightly with:
 - **Firestore**: Together with Cloud Storage, they form a common pattern in app development:
     - Store **metadata** (e.g., file name, owner, timestamp, access permissions) in **Firestore**
     - Store the **actual file** in **Cloud Storage**
+
+
+# Filestore
+Filestore is a fully managed Network Attached Storage (NAS) service on Google Cloud. It supports NFSv3 and is designed for applications that need a shared file system with predictable performance and scalability. Key features include:
+- **NFSv3 compatibility**: Works with any NFSv3-compatible client.
+- **Performance tuning**: Independently scale performance and capacity.
+- **Use cases**: Enterprise app migration, media rendering, EDA, data analytics, genome sequencing, and web hosting.
+- **No client-side software**: Native integration with Compute Engine and GKE.
+- **Scale-out performance**: Supports hundreds of TBs and file locking.
+
+## Key Differences: Filestore vs FSx vs EFS
+| **Feature** | **Google Filestore** | **Amazon EFS** |
+| :----- | :------ | :-------|
+| **Protocol** | NFSv3 | NFSv4 |
+| **Performance Tiers**	| Basic, High Scale	| Standard, One Zone |
+| **Scalability** | Manual scaling | Elastic |
+| **Backup** | Manual or via GCP tools | AWS Backup |
+| **Use Cases** | HPC, media, analytics | Web apps, CMS, containers |
+| **Compliance** | HIPAA, ISO, etc. | HIPAA, PCI-DSS |
 
 # CloudSQL
 Cloud SQL is a fully managed relational database service that supports:
@@ -127,6 +200,8 @@ It’s designed to offload operational tasks like:
 - Internal business apps
 - Apps requiring strong consistency and relational structure
 
+![gcp-cloud-sql-connection](/images/gcp/gcp-cloud-sql-connection.png)
+
 # Cloud Spanner
 **Cloud Spanner** is Google Cloud’s **fully managed, horizontally scalable, strongly consistent relational database**. It combines the benefits of traditional relational databases (like SQL support and ACID transactions) with the scalability and availability of NoSQL systems.
 
@@ -156,6 +231,19 @@ It’s designed to offload operational tasks like:
 | **Use Case** | High-scale OLTP | Traditional apps | Mobile/web apps |
 
 > **AWS Equivalent**: Amazon Aurora (for SQL) + DynamoDB (for scale), but neither offers the same global consistency and horizontal scaling in one service.
+
+![gcp-choose-cloud-spanner](/images/gcp/gcp-choose-cloud-spanner.png)
+
+# AlloyDB for PostgreSQL
+AlloyDB is a fully managed, PostgreSQL-compatible database service designed for high-performance transactional and analytical workloads. It combines a custom Google-built database engine with a multi-node cloud-native architecture.
+## Key Capabilities
+- **Performance**: Up to 4x faster for transactional workloads and 100x faster for analytical queries than standard PostgreSQL.
+- **Machine Learning Integration**: Built-in integration with Vertex AI for invoking ML models directly from SQL.
+- **Automation**: Handles backups, replication, patching, and capacity management.
+- **Adaptive Intelligence**: Uses ML for vacuum tuning, memory/storage optimization, and data tiering.
+- **High Availability**: 99.99% SLA with automatic failover and multi-zone replication.
+
+> **AWS Equivalent**: Amazon Aurora PostgreSQL
 
 # Firestore
 **Firestore** is a fully managed, serverless, NoSQL document database designed for mobile, web, and server applications. It offers real-time synchronization, offline support, and horizontal scalability.
@@ -199,6 +287,8 @@ It’s designed to offload operational tasks like:
 | Chat/messaging | Real-time updates, low latency |
 | Metadata store | Flexible document model |
 
+![gcp-choose-firestore](/images/gcp/gcp-choose-firestore.png)
+
 # Bigtable
 **Cloud Bigtable** is Google Cloud’s **NoSQL wide-column database** designed for **massive scale, low latency**, and **high throughput**. It powers many of Google’s own services like Search, Maps, Gmail, and Analytics.
 
@@ -213,6 +303,8 @@ It’s designed to offload operational tasks like:
 | **Strong Integration** | Works with Dataflow, Dataproc, Apache HBase API, and more |
 
 ## When to Use Bigtable
+![gcp-choose-bigtable](/images/gcp/gcp-choose-bigtable.png)
+
 Choose Bigtable if:
 - You’re working with **>1 TB** of structured or semi-structured data
 - Your data is **fast-changing** or **time-series** in nature
@@ -245,3 +337,6 @@ Choose Bigtable if:
 
 # Comparing storage options
 ![storage-option-compare](/images/gcp/storage-option-compare.png)
+
+# Google Memorystore
+![gcp-memorystore](/images/gcp/gcp-memorystore.png)

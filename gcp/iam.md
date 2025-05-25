@@ -1,4 +1,59 @@
 # Google Cloud IAM (Identity and Access Management)
+## Hierarchy
+### IAM & Resource Hierarchy in Google Cloud
+| **Concept** | **Description** |
+| :------- | :--------- |
+| **Resource Hierarchy** | Organization → Folder → Project → Resources |
+| **IAM Policy Inheritance** | Policies are inherited top-down (Org → Folder → Project → Resource) |
+| **IAM Deny Policies** | Override allow policies and explicitly block access |
+| **Billing Flow** | Accumulates bottom-up (Resource → Project → Billing Account → Organization) |
+| **Project Identifiers** | Project Name (human-readable), Project ID (unique), Project Number (system-generated) |
+| **Resource Types** | Global (e.g., networks), Regional (e.g., IPs), Zonal (e.g., VMs, disks) |
+
+#### Key Capabilities of Google Cloud Resource Manager
+- **Centralized Policy Management**: IAM roles and policies can be applied at any level and inherited by child resources.
+- **Project Isolation**: Each project is a boundary for billing, APIs, and IAM.
+- **Fine-Grained Access Control**: Use IAM roles and conditions to control access.
+- **Auditability**: All changes and access are logged via Cloud Audit Logs.
+
+### Organization Node
+- **Root of the GCP hierarchy**: Represents the entire company.
+- **Key Roles**:
+    - **Organization Admin**: Full administrative access across all resources; ideal for auditing.
+    - **Project Creator**: Can create projects within the organization; role can be inherited by all projects.
+- **Linked to**: G Suite or Cloud Identity Account.
+- **Super Admins**: Have overarching control and are notified when an organization resource is provisioned.
+
+### Responsibilities
+- **G Suite/Cloud Identity Super Admin**:
+    - Assigns organization admin roles.
+    - Acts as recovery contact.
+    - Manages lifecycle of the G Suite/Cloud Identity account and organization resource.
+
+- **Organization Admin**:
+    - Defines IAM policies.
+    - Structures the resource hierarchy.
+    - Delegates responsibilities (e.g., billing, networking).
+    - Needs additional roles to perform actions like folder creation (least privilege principle).
+
+### Folder Structure
+- **Folders = Sub-organizations**:
+    - Used to model departments, teams, or applications.
+    - Can contain projects and other folders.
+    - Enable isolation and delegation of access.
+    - Example: Department → Team → Application.
+
+### Roles and Inheritance
+- **Organization Node**:
+    - **Viewer**: View access to all resources.
+- **Folder Node**:
+    - **Admin**: Full control over folders.
+    - **Creator**: Can browse and create folders.
+    - **Viewer**: Can view folders and projects.
+- **Project Node**:
+    - **Creator**: Can create and own new projects.
+    - **Deleter**: Can delete projects.
+
 ## Purpose of IAM
 - Controls who can do what on which resources in a Google Cloud environment.
 - Helps enforce least-privilege access across folders, projects, and resources.
@@ -16,6 +71,18 @@
 - Policies apply to the resource and all its children in the hierarchy.
 - Deny policies override allow policies and are also inherited.
 
+### IAM Policies and Resource Hierarchy
+- **Hierarchy Structure**:
+    - **Organization Node**: Root of the hierarchy, represents the company.
+    - **Folders**: Represent departments, children of the organization.
+    - **Projects**: Represent trust boundaries, children of folders.
+    - **Resources**: Individual services, children of projects.
+- **Inheritance**:
+    - Roles granted at the **organization** level apply to all resources beneath it.
+    - Roles at the **folder** level apply to all resources within that folder.
+    - Services within the same **project** share the same default trust level.
+![iam-policy-inheritence](/images/gcp/iam-inheritence.png)
+
 ## Types of IAM Roles
 ### Basic Roles
 Broad access across all resources in a project. Includes:
@@ -23,6 +90,7 @@ Broad access across all resources in a project. Includes:
 - **Editor**: Read/write access
 - **Owner**: Full access + manage roles/billing
 - **Billing Admin**: Manage billing only
+![iam-roles](/images/gcp/iam-roles.png)
 
 ### Predefined Roles
 Predefined roles are fine-grained, service-specific roles created and maintained by Google. They are designed to grant only the permissions required to perform specific tasks, aligning with the principle of least privilege.
@@ -167,3 +235,32 @@ A browser-based, Debian VM with:
 - Monitor billing and receive alerts.
 - Visualize metrics like CPU usage and network traffic.
 - Incident management and traffic splitting for App Engine.
+
+# Billing Console Overview
+- Accessed via Navigation Menu → Billing in the GCP Console.
+- Shows monthly consumption, credits, and billing accounts.
+- You can manage payment methods, payment profiles, and transactions.
+
+## Budgets and Alerts
+- Navigate to Budgets & Alerts → Create Budget.
+- Steps to create a budget:
+    - Name your budget (e.g., My-Budget-Alert).
+    - Select projects to apply the budget to.
+    - Set budget amount (fixed or based on last month’s spend).
+    - Define thresholds (e.g., 25%, 50%, 90%, 100%).
+    - Choose actual vs. forecasted spend.
+    - Optionally, connect to Pub/Sub for automation (e.g., trigger workflows when thresholds are hit).
+- Alerts are sent via email and can be monitored in the console.
+
+## Exporting Billing Data
+- Go to Billing → Billing Export.
+- Two export options:
+    - BigQuery: For advanced querying and dashboarding.
+    - Cloud Storage: Export as CSV or JSON to a bucket.
+- You must:
+    - Create a BigQuery dataset or Cloud Storage bucket.
+    - Define prefixes and destination.
+    - Enable export and save settings.
+- Transaction History
+    - View detailed usage and charges by service (e.g., Compute Engine, disks).
+    - Credits are shown as offsets to charges.

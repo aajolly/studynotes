@@ -147,6 +147,37 @@ You can configure VMs using:
 ![ram-risk](/images/gcp/ram-disk.png)
 ![summary](/images/gcp/summary-disk-options.png)
 
+## Common Compute Engine Actions
+### Metadata Server
+- Stores VM instance metadata.
+- Useful with startup and shutdown scripts.
+- Allows programmatic access to instance-specific data (e.g., external IP) without extra authorization.
+- Promotes reusable and less brittle scripts.
+
+### Moving VM Instances
+- Reasons: geographic optimization or zone deprecation.
+- Steps:
+    - Shut down the VM.
+    - Move it to the new zone or region.
+    - Restart the VM.
+    - Update any references to the original VM.
+- Use a machine image to recreate the VM in the new location.
+
+### Snapshots
+- Use Cases:
+    - Backup critical data.
+    - Migrate data between zones.
+    - Transfer data to different disk types (e.g., HDD → SSD).
+- Only available for persistent disks (not local SSDs).
+- Incremental, compressed, and cost-effective.
+- Can be scheduled for regular backups.
+- Snapshots can be restored to new disks for zone migration.
+
+### Resizing Persistent Disks
+- Increases storage and improves I/O performance.
+- Can be done while the disk is attached and the VM is running.
+- Disks can only be expanded, not reduced in size.
+
 ## Autoscaling
 - **What it does**: Automatically adjusts the number of VM instances in a managed instance group based on load metrics like CPU utilization or custom metrics.
 - **Why it matters**: Helps maintain performance while optimizing cost.
