@@ -195,6 +195,67 @@ You can configure VMs using:
 - You can request quota increases via the Google Cloud Console.
 > For current specs: https://cloud.google.com/compute/docs/machine-types
 
+### Managed Instance Group (MIG)
+A Managed Instance Group is a collection of identical VM instances managed as a single entity using an instance template.
+
+#### Key Features of MIGs
+| **Feature** | **Description** |
+| :-------- | :--------- |
+| Rolling Updates | Easily update all instances by applying a new instance template. |
+| Autoscaling | Automatically scales the number of instances based on load. |
+| Load Balancing | Integrates with load balancers to distribute traffic across instances. |
+| Self-Healing | Automatically recreates failed or deleted instances using the same name and template. |
+| Health Checks | Identifies and replaces unhealthy instances to maintain optimal performance. |
+| Zonal vs Regional | Regional MIGs are preferred for high availability as they span multiple zones. |
+
+#### MIG Creation Workflow
+1. Create an Instance Template – Defines the configuration for VMs.
+2. Create a MIG – Specify number of instances and use the template.
+3. Configure Group Settings:
+    - Stateless (e.g., web frontends) or Stateful (e.g., databases).
+    - Zonal or Regional deployment.
+    - Port mappings (optional).
+    - Autoscaling policies.
+    - Health checks for traffic routing.
+
+#### Autoscaling in Google Cloud MIGs
+**Purpose**: Automatically adjusts the number of VM instances in a MIG based on demand to optimize performance and cost.
+
+**Key Features**:
+- Policy-based scaling:
+    - CPU utilization (e.g., target 75%)
+    - Load balancing capacity
+    - Cloud Monitoring metrics
+    - Queue-based workloads (e.g., Pub/Sub)
+    - Scheduled scaling (start time, duration, recurrence)
+- Monitoring:
+    - View metrics like CPU, disk, and network usage per instance or group.
+    - Integrates with Cloud Monitoring for alerts and visualization.
+> **Example**: If two instances are at 100% and 85% CPU, and the target is 75%, the autoscaler adds another instance to balance the load.
+
+#### Health Checks in MIGs
+**Purpose**: Ensure only healthy instances receive traffic and enable autohealing.
+
+**Configuration Parameters**:
+- Protocol & Port: e.g., HTTP on port 80
+- Check Interval: How often to check (e.g., every 5s)
+- Timeout: How long to wait for a response (e.g., 5s)
+- Healthy Threshold: Number of successful checks to mark healthy (e.g., 2)
+- Unhealthy Threshold: Number of failed checks to mark unhealthy (e.g., 2)
+> **Autohealing**: Unhealthy instances are automatically recreated using the same template.
+
+#### Stateful IP Configuration
+**Purpose**: Preserve internal/external IPs during updates, autohealing, or recreation.
+
+**Use Cases**:
+- Applications requiring static IPs
+- IP-dependent configurations
+- Migration scenarios without changing network settings
+**Options**:
+- Automatically promote ephemeral IPs to static
+- Assign specific IPs to instances
+- Apply stateful policy to existing and future instances
+
 # Containers
 **Containers** are a lightweight, portable way to package and run applications and their dependencies in isolated environments. They provide the flexibility of Infrastructure as a Service (IaaS) with the scalability of Platform as a Service (PaaS).
 

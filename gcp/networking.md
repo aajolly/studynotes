@@ -241,6 +241,7 @@ Cloud Load Balancing is a fully managed, software-defined service that distribut
 | Application Load Balancer | Layer 7 | Handles HTTP/HTTPS traffic. Supports content-based routing, SSL termination, and reverse proxying. Can be external or internal. |
 | Proxy Network Load Balancer | Layer 4 | Terminates client connections and opens new ones to backends. Supports hybrid and multi-cloud backends. |
 | Passthrough Network Load Balancer | Layer 4 | Forwards traffic directly to backend without modifying it. Preserves source IP. Ideal for direct server return.|
+![http-lb-architecture](/images/gcp/https_lb_architecture.png)
 ![gcp-lb-l7](/images/gcp/gcp-lb-l7.png)
 ![gcp-lb-l4-proxy](/images/gcp/gcp-lb-l4-proxy.png)
 ![gcp-lb-l4-passthrough](/images/gcp/gcp-lb-l4-passthrough.png)
@@ -258,26 +259,53 @@ Cloud Load Balancing is a fully managed, software-defined service that distribut
 - **Use Case**: Quick, cost-effective setup for secure connectivity.
 > **AWS Equivalent**: AWS Site-to-Site VPN + AWS Transit Gateway
 
-## Direct Peering
+### Classic VPN
+**Purpose**: Secure, low-volume IPsec VPN connection between on-premises and Google Cloud VPC.
+**Features**:
+- SLA: 99.9% availability.
+- Supports static and dynamic routing (via Cloud Router).
+- Uses IKEv1 and IKEv2.
+- Does not support client VPN software.
+**Use Case**: Site-to-site VPN with basic redundancy.
+> **AWS Equivalent**: AWS Site-to-Site VPN
+
+### HA VPN
+**Purpose**: High availability VPN with enhanced SLA and redundancy.
+**Features**:
+- SLA: 99.99% availability.
+- Requires 2 or 4 tunnels for SLA compliance.
+- Uses BGP for dynamic routing.
+- Supports active/active and active/passive configurations.
+- Can connect to AWS VPN gateways or other HA VPNs.
+- **Use Case**: Mission-critical workloads needing high availability and dynamic routing.
+> **AWS Equivalent**: AWS Transit Gateway with VPN
+>   - High availability with multiple tunnels.
+>   - Supports BGP and ECMP (Equal-Cost Multi-Path) routing.
+>   - Can connect multiple VPCs and on-premises networks.
+
+## Cloud Interconnect
+![gcp-cloud-interconnect-options](/images/gcp/gcp-cloud-interconnect-options.png)
+
+### Direct Peering
 - **What it is**: Connects your on-premises router directly to Google at a Google Point of Presence (PoP).
 - **Use Case**: Low-latency access to Google services without traversing the public internet.
 - **Limitation**: Not covered by a Google SLA.
 > **AWS Equivalent**: AWS Direct Connect Public VIF
 
-## Carrier Peering
+### Carrier Peering
 - **What it is**: Connects your on-premises network to Google via a partner service provider.
 - **Use Case**: When you're not in a Google PoP but want direct access to Google services.
 - **Limitation**: No SLA from Google.
 > **AWS Equivalent**: AWS Direct Connect via Partner
 
-## Dedicated Interconnect
+### Dedicated Interconnect
 - **What it is**: Provides private, high-throughput, SLA-backed connectivity between your network and Google.
 - **Speeds**: 10 Gbps or 100 Gbps.
 - **SLA**: Up to 99.99% if topology meets Google’s requirements.
 - **Backup**: Can be paired with Cloud VPN for redundancy.
 > **AWS Equivalent**: AWS Direct Connect Dedicated
 
-## Partner Interconnect
+### Partner Interconnect
 - **What it is**: Similar to Dedicated Interconnect but delivered via a Google-approved service provider.
 - **Use Case**: When your data center can’t reach a Dedicated Interconnect location or doesn’t need full 10 Gbps.
 - **SLA**: Up to 99.99%, but Google is not responsible for the partner’s portion.
@@ -292,3 +320,6 @@ Cloud Load Balancing is a fully managed, software-defined service that distribut
     - Site-to-site encryption
     - Reduced complexity
 > **AWS Equivalent**: AWS Cloud WAN (partial), or third-party multicloud interconnect solutions
+
+![gcp-interconnect-options-compared](/images/gcp/gcp-interconnect-options-compared.png)
+![gcp-interconnect-decision-tree](/images/gcp/gcp-interconnect-decision-tree.png)
