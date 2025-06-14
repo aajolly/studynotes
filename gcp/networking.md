@@ -236,6 +236,7 @@ Cloud Load Balancing is a fully managed, software-defined service that distribut
     - Backend health
 
 ## Types of Load Balancers in Google Cloud
+![gcp-lb-options](/images/gcp/gcp-lb-options.png)
 | **Type** | **OSI Layer** | **Description** |
 | :--- | :------- | :------- |
 | Application Load Balancer | Layer 7 | Handles HTTP/HTTPS traffic. Supports content-based routing, SSL termination, and reverse proxying. Can be external or internal. |
@@ -251,6 +252,36 @@ Cloud Load Balancing is a fully managed, software-defined service that distribut
 - **Health checks**: Automatically routes traffic away from unhealthy instances.
 - **Global and regional options**: Choose based on latency, redundancy, and compliance needs.
 - **Traffic splitting**: Useful for gradual rollouts and A/B testing.
+
+# Cloud CDN
+Cloud CDN (Content Delivery Network) uses Google’s globally distributed edge points of presence (PoPs) to cache HTTP(S) load-balanced content closer to users. There are over 90 cache sites across Asia Pacific, Americas, and EMEA.
+
+## Why Use Cloud CDN?
+- Faster content delivery by caching at the edge.
+- Reduced serving costs by offloading traffic from origin servers.
+- Easy to enable via a checkbox in the backend service of an HTTP(S) load balancer.
+
+## How Cloud CDN Works (Response Flow)
+1. **User Request**: A user in San Francisco requests content.
+2. **Cache Miss**: If the local cache doesn’t have it, it checks nearby caches (e.g., Los Angeles).
+3. **Backend Fetch**: If still unavailable, the request is forwarded to the HTTP(S) load balancer, which routes it to:
+    - A Cloud Storage bucket (e.g., for static content).
+    - A Managed instance group (e.g., for dynamic PHP content).
+4. **Cache Store**: If the content is cacheable, it’s stored at the San Francisco cache site.
+5. **Cache Hit**: Future requests for the same content are served directly from the cache.
+
+## Logging and Monitoring
+- Each request is logged with a Cache Hit or Cache Miss status.
+- Logs help analyze cache effectiveness and troubleshoot issues.
+
+## Cache Modes
+Cloud CDN offers three cache modes to control caching behavior:
+| **Mode** | **Behavior** |
+| :------ | :-------- |
+| USE_ORIGIN_HEADERS | Respects cache headers from the origin. |
+| CACHE_ALL_STATIC | Automatically caches static content unless marked no-store, private, etc. |
+| FORCE_CACHE_ALL | Caches all responses, ignoring origin cache headers. Use with caution. |
+> Avoid caching private or per-user content with FORCE_CACHE_ALL.
 
 # Google Cloud’s network connectivity options
 ## Cloud VPN (Over the Internet)
