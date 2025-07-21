@@ -8,6 +8,7 @@
 # VPC Networks
 - Global in scope: span all Google Cloud regions
 - Types of VPC networks:
+
 | **Type** | **Description** |
 | :----- | :------- |
 | **Default** | Auto mode network with pre-created subnets and firewall rules |
