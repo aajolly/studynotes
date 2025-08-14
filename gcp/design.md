@@ -350,3 +350,63 @@ The 12-factor app is a set of best practices for building web or software-as-a-s
 ![gcp-storage-services](/images/gcp/gcp-storage-services.png)
 ![gcp-storage-services-decision-tree](/images/gcp/gcp-storage-services-decision-tree.png)
 
+# Google Cloud Deployment Platforms
+![gcp_choose_deployment_option](/images/gcp/gcp_choose_deployment_pattern.png)
+
+## Google Kubernetes Engine (GKE)
+**What it is**: A managed Kubernetes service for deploying, managing, and scaling containerized applications.
+**Key Concepts**:
+- Uses Compute Engine VMs to form clusters.
+- Kubernetes handles orchestration: deployments, scaling, monitoring, and policies.
+- Pods are the smallest deployable units, containing one or more containers.
+- Two modes:
+    - **Autopilot**: Fully managed by Google (recommended).
+    - **Standard**: More control and flexibility.
+
+> **AWS Equivalent**: Amazon EKS (Elastic Kubernetes Service)
+
+## Cloud Run
+**What it is**: A fully managed platform to run containers without managing servers.
+**Deployment Options**:
+- From Artifact Registry (by tag or digest).
+- Directly from source code (auto-containerized and stored in Artifact Registry).
+**Revisions**:
+- Immutable.
+- Each deployment creates a new revision.
+
+**Tools**: Deploy via Google Cloud Console or gcloud CLI.
+
+> **AWS Equivalent**: AWS App Runner or AWS Fargate (for serverless containers)
+
+## App Engine
+**What it is**: A serverless platform for building and deploying applications.
+**Features**:
+- Auto-scaling from zero.
+- Designed for microservices.
+- Supports traffic splitting (e.g., A/B testing, canary deployments).
+- Structure:
+    - One App Engine app per project.
+    - App → Services → Versions → Instances.
+- Architecture Example:
+    - Frontend: App Engine.
+    - Backend:
+        - Cloud Storage (static content)
+        - Cloud SQL (relational data)
+        - Firestore (NoSQL)
+        - Memcache (caching)
+        - Cloud Tasks (async processing)
+
+> **AWS Equivalent**: AWS Elastic Beanstalk (for managed app deployment), AWS Lambda (for serverless), Amazon S3, Amazon RDS, Amazon DynamoDB, Amazon ElastiCache, Amazon SQS
+
+## Cloud Run Functions
+**What it is**: Event-driven, loosely coupled microservices.
+**Triggers**:
+- Cloud Storage events
+- Pub/Sub messages
+- HTTP requests
+**Billing**: Based on execution time (100ms increments); no cost when idle.
+**Example Use Case**:
+- Image uploaded → OCR function (Vision API) → Pub/Sub → Translation function → Pub/Sub → File write function.
+
+> **AWS Equivalent**: AWS Lambda with Amazon S3, Amazon SNS/SQS, Amazon Translate, Amazon Rekognition
+
